@@ -104,7 +104,7 @@ public class MessageManager : Singleton<MessageManager>
             else
             {
                 PlayerInformationInstance.InformationDivider(MessageQueue_PlayerInformation.Dequeue());
-                yield return Coop.WaitForSeconds(0.2f);
+                yield return Coop.WaitForSeconds(0.05f);
             }
         }
     }
@@ -132,14 +132,14 @@ public class MessageManager : Singleton<MessageManager>
             // skip ProtocolType
             TemporaryInformation.ProtocolType = Reader.ReadInt32();
 
+            // information
+            TemporaryInformation.Player_ID = Reader.ReadInt32();
+
             // flag exit
             if (TemporaryInformation.ProtocolType == 4)
                 return TemporaryInformation;
 
-            // information
-            TemporaryInformation.Player_ID = Reader.ReadInt32();
-
-            if (TemporaryInformation.ProtocolType == 2)
+            else if (TemporaryInformation.ProtocolType == 2)
             {
                 int dataLength = Reader.ReadInt32();
                 byte[] nameData = Reader.ReadBytes(dataLength);

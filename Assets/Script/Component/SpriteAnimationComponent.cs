@@ -6,13 +6,19 @@ public class SpriteAnimationComponent : MonoBehaviour
     public bool OnMoveAnimation;
 
     private SpriteRenderer PlayerSpriteRenderer;
-    public bool SetSpriteFlipX
+    public bool SpriteFlipX
     {
         set
         {
             PlayerSpriteRenderer.flipX = value;
         }
+
+        get
+        {
+            return PlayerSpriteRenderer.flipX;
+        }
     }
+
     private readonly int ReadonlyInt_ETCRate = 70; // 0 ~ 99, 71%
 
     private Sprite[] SpriteArray_Idle;

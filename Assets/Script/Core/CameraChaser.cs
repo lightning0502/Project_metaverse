@@ -5,15 +5,17 @@ using Extension;
 
 public class CameraChaser : Singleton<CameraChaser>
 {
-    public Transform PlayerTransform;
-    private GameObject PlayerGameObject;
-
     public Camera MainCamera;
+
+    // values
+    private Transform PlayerTransform;
+    private GameObject PlayerGameObject;
     private Transform CameraTransform;
     private Vector3 CameraPosition;
 
-    private readonly float ReadonlyFloat_PositionX = 12.4f;
-    private readonly float ReadonlyFloat_PositionY = 15.8f;
+    // readonly
+    private readonly float ReadonlyFloat_MaximumMapPositionX = 12.4f;
+    private readonly float ReadonlyFloat_MaximumMapPositionY = 15.8f;
     private readonly int ReadonlyInt_MinusZPosition = -10;
 
     private void Awake()
@@ -21,46 +23,48 @@ public class CameraChaser : Singleton<CameraChaser>
         CameraTransform = MainCamera.transform;
     }
 
-    public IEnumerator StartCameraMove()
+    public void SetCameraMove(Transform playerObject)
     {
-        if (object.ReferenceEquals(PlayerTransform, null))
+        if (object.ReferenceEquals(playerObject, null))
         {
-            Debug.LogError("Error -> StartCameraMove : PlayerTransform is null");
-            yield break;
+            Debug.LogError("Error -> SetCameraMove : playerTransform is null");
+            return;
         }
 
-        else
-            PlayerGameObject = PlayerTransform.gameObject;
+        PlayerTransform = playerObject;
+        PlayerGameObject = PlayerTransform.gameObject;
 
+        StartCoroutine(StartCameraMove());
+    }
+
+    private IEnumerator StartCameraMove()
+    {
         float playerX, playerY;
 
         while (PlayerGameObject.activeSelf)
         {
+            playerX = PlayerTransform.localPosition.x;
+            playerY = PlayerTransform.localPosition.y;
+
+            CameraTransform.SetPosition(playerX, playerY, ReadonlyInt_MinusZPosition);
+            CameraPosition = CameraTransform.localPosition;
+
             if (Input.anyKey)
             {
-                playerX = PlayerTransform.localPosition.x;
-                playerY = PlayerTransform.localPosition.y;
+                if (CameraPosition.x < -ReadonlyFloat_MaximumMapPositionX)
+                    CameraTransform.SetPosition(-ReadonlyFloat_MaximumMapPositionX, CameraPosition.y, ReadonlyInt_MinusZPosition);
 
-                CameraTransform.SetPosition(playerX, playerY, ReadonlyInt_MinusZPosition);
-                CameraPosition = CameraTransform.localPosition;
+                else if (CameraPosition.x > ReadonlyFloat_MaximumMapPositionX)
+                    CameraTransform.SetPosition(ReadonlyFloat_MaximumMapPositionX, playerY, ReadonlyInt_MinusZPosition);
 
-                if (CameraPosition.x < -ReadonlyFloat_PositionX)
-                    CameraTransform.SetPosition(-ReadonlyFloat_PositionX, CameraPosition.y, ReadonlyInt_MinusZPosition);
+                if (CameraPosition.y < -ReadonlyFloat_MaximumMapPositionY)
+                    CameraTransform.SetPosition(CameraPosition.x, -ReadonlyFloat_MaximumMapPositionY, ReadonlyInt_MinusZPosition);
 
-                else if (CameraPosition.x > ReadonlyFloat_PositionX)
-                    CameraTransform.SetPosition(ReadonlyFloat_PositionX, playerY, ReadonlyInt_MinusZPosition);
-
-                if (CameraPosition.y < -ReadonlyFloat_PositionY)
-                    CameraTransform.SetPosition(CameraPosition.x, -ReadonlyFloat_PositionY, ReadonlyInt_MinusZPosition);
-
-                else if (CameraPosition.y > ReadonlyFloat_PositionY)
-                    CameraTransform.SetPosition(CameraPosition.x, ReadonlyFloat_PositionY, ReadonlyInt_MinusZPosition);
-
-                yield return Coop.WaitForSeconds(0.015f);
+                else if (CameraPosition.y > ReadonlyFloat_MaximumMapPositionY)
+                    CameraTransform.SetPosition(CameraPosition.x, ReadonlyFloat_MaximumMapPositionY, ReadonlyInt_MinusZPosition);
             }
 
-            else
-                yield return Coop.WaitForSeconds(0.15f);
+            yield return Coop.WaitForSeconds(0.02f);
         }
     }
 }

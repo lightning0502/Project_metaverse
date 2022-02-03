@@ -19,97 +19,120 @@ public class InputMovementComponent : MonoBehaviour
     private readonly KeyCode KeyboardArrow_Right = KeyCode.RightArrow;
     private readonly KeyCode KeyboardArrow_Up = KeyCode.UpArrow;
     private readonly KeyCode KeyboardArrow_Down = KeyCode.DownArrow;
-    private readonly float ReadonlyFloat_MovePower = 0.06f;
+    private readonly float ReadonlyFloat_MovePower = 7f;
+    private readonly string ReadonlyString_Vertical = "Vertical";
+    private readonly string ReadonlyString_Horizontal = "Horizontal";
 
-    public int CurrentID;
+    // values
+    private int CurrentID;
+    private bool OnLerp_MoveX;
+    private bool OnLerp_MoveY;
+    private Vector3 GoalPosition;
 
-    public void InputCheckerStart(SpriteAnimationComponent animationComponent, ref int id, bool onCurrentPlayer)
+    private void Awake()
+    {
+        MessageManagerInstance = MessageManager.Instance;
+        OnLerp_MoveX = false;
+        OnLerp_MoveY = false;
+        GoalPosition = Vector2.zero;
+    }
+
+    public void InputCheckerStart(SpriteAnimationComponent animationComponent, ref int id, bool isOtherPlayer)
     {
         PlayerTransform = gameObject.transform;
         PlayerRigidbody2D = PlayerTransform.GetComponent<Rigidbody2D>();
-        MessageManagerInstance = MessageManager.Instance;
 
         AnimationComponentInstance = animationComponent;
         CurrentID = id;
 
-        if (onCurrentPlayer)
-            return;
+        if (isOtherPlayer)
+        {
 
+            return;
+        }
+
+        CameraChaser.Instance.SetCameraMove(PlayerTransform);
         StartCoroutine(InputChecker());
-        StartCoroutine(CameraChaser.Instance.StartCameraMove());
-        StartCoroutine(PositionChecker());
     }
 
-    public void SetLocalPosition(int id, Vector2 vectorPosition)
+    public void OnLerpMove(Vector3 vectorPosition)
     {
         Debug.Log("id : " + CurrentID + " / SetLocalPosition : " + vectorPosition);
-        PlayerRigidbody2D.MovePosition(vectorPosition);
+        PlayerTransform.localPosition = vectorPosition;
+
+        if (OnLerp_MoveX)
+            return;
+
+        // StartCoroutine(StartLerpMove());
+    }
+
+    /*
+        private IEnumerator StartLerpMove()
+        {
+            OnLerp_MoveX = true;
+
+            while (LerpTimer > 0)
+            {
+                yield return Coop.WaitForSeconds(0.08f);
+
+                AnimationComponentInstance.OnMoveAnimation = true;
+                PlayerTransform.localPosition = GoalPosition;
+            }
+
+            AnimationComponentInstance.OnMoveAnimation = false;
+            OnLerp_MoveX = false;
+        }
+        */
+
+    private bool OnArrowInputKey(ref bool onLeft, ref bool onRight)
+    {
+        if (Input.anyKey)
+        {
+            onLeft = Input.GetKey(KeyboardArrow_Left);
+            onRight = Input.GetKey(KeyboardArrow_Right);
+            return onLeft || onRight || Input.GetKey(KeyboardArrow_Up) || Input.GetKey(KeyboardArrow_Down);
+        }
+
+        else
+            return false;
+    }
+
+    private void FlipXChecker(bool onLeft, bool onRight)
+    {
+        if (onLeft)
+            AnimationComponentInstance.SpriteFlipX = false;
+
+        else if (onRight)
+            AnimationComponentInstance.SpriteFlipX = true;
     }
 
     private IEnumerator InputChecker()
     {
-        Vector2 offset;
+        Vector2 offset = Vector2.zero;
+        bool onLeft = false, onRight = false;
 
         while (gameObject.activeSelf)
         {
-            if (Input.anyKey)
+            if (OnArrowInputKey(ref onLeft, ref onRight))
             {
-                offset = PlayerTransform.localPosition;
+                // Acceleration applied
+                offset.x = Input.GetAxis(ReadonlyString_Horizontal) * ReadonlyFloat_MovePower;
+                offset.y = Input.GetAxis(ReadonlyString_Vertical) * ReadonlyFloat_MovePower;
+                PlayerRigidbody2D.velocity = offset;
 
-                if (Input.GetKey(KeyboardArrow_Left))
-                {
-                    offset.x -= ReadonlyFloat_MovePower;
-                    PlayerRigidbody2D.MovePosition(offset);
-                    AnimationComponentInstance.OnMoveAnimation = true;
-                    AnimationComponentInstance.SetSpriteFlipX = false;
-                }
-
-                else if (Input.GetKey(KeyboardArrow_Right))
-                {
-                    offset.x += ReadonlyFloat_MovePower;
-                    PlayerRigidbody2D.MovePosition(offset);
-                    AnimationComponentInstance.OnMoveAnimation = true;
-                    AnimationComponentInstance.SetSpriteFlipX = true;
-                }
-
-                if (Input.GetKey(KeyboardArrow_Up))
-                {
-                    offset.y += ReadonlyFloat_MovePower;
-                    PlayerRigidbody2D.MovePosition(offset);
-                    AnimationComponentInstance.OnMoveAnimation = true;
-                }
-
-                else if (Input.GetKey(KeyboardArrow_Down))
-                {
-                    offset.y -= ReadonlyFloat_MovePower;
-                    PlayerRigidbody2D.MovePosition(offset);
-                    AnimationComponentInstance.OnMoveAnimation = true;
-                }
-
-                yield return Coop.WaitForSeconds(0.015f);
+                FlipXChecker(onLeft, onRight);
+                AnimationComponentInstance.OnMoveAnimation = true;
+                MessageManagerInstance.SendInformation(CurrentID, PlayerTransform.localPosition);
+                yield return Coop.WaitForSeconds(0.08f);
             }
 
             else
             {
                 AnimationComponentInstance.OnMoveAnimation = false;
-                yield return Coop.WaitForSeconds(0.15f);
+                yield return Coop.WaitForSeconds(0.2f);
             }
         }
 
         Debug.Log("Input End!");
-    }
-
-    private IEnumerator PositionChecker()
-    {
-        while (gameObject.activeSelf)
-        {
-            if (Input.anyKey)
-            {
-                MessageManagerInstance.SendInformation(CurrentID, PlayerTransform.localPosition);
-                yield return Coop.WaitForSeconds(0.25f);
-            }
-
-            yield return Coop.WaitForSeconds(1);
-        }
     }
 }
