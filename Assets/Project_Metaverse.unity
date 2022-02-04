@@ -333,6 +333,7 @@ GameObject:
   - component: {fileID: 101340032}
   - component: {fileID: 101340031}
   - component: {fileID: 101340030}
+  - component: {fileID: 101340033}
   m_Layer: 5
   m_Name: Input Text Field
   m_TagString: Untagged
@@ -508,6 +509,19 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 101340028}
   m_CullTransparentMesh: 1
+--- !u!114 &101340033
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 101340028}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cc33a39070010f94fb1c2dd721c1286d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  showHtmlElement: 1
 --- !u!1 &128060260
 GameObject:
   m_ObjectHideFlags: 0
@@ -2042,6 +2056,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   MainCamera: {fileID: 598560589}
+  CameraMoveTimer: 0
 --- !u!1 &598560588
 GameObject:
   m_ObjectHideFlags: 0
@@ -2947,13 +2962,13 @@ PolygonCollider2D:
   m_Points:
     m_Paths:
     - - {x: -0.4516207, y: 1.6153017}
-      - {x: 0.5962112, y: 1.0054157}
+      - {x: 0.60567737, y: 1.0172484}
       - {x: 0.90552175, y: 1.1309019}
       - {x: 1.0673708, y: 1.3410589}
-      - {x: 0.9191476, y: 0.82573974}
-      - {x: 1.1072705, y: 0.720063}
-      - {x: 1.2927963, y: 0.8263167}
-      - {x: 1.1928588, y: 1.0261781}
+      - {x: 0.9759447, y: 0.8115405}
+      - {x: 1.1214697, y: 0.7389953}
+      - {x: 1.2454654, y: 0.8263167}
+      - {x: 1.1597271, y: 1.0119789}
       - {x: 1.1937789, y: 1.5486205}
       - {x: 0.9285402, y: 1.7162433}
       - {x: -0.1355651, y: 2.3283987}
@@ -3972,7 +3987,7 @@ GameObject:
   - component: {fileID: 1379492522}
   - component: {fileID: 1379492520}
   - component: {fileID: 1379492523}
-  m_Layer: 0
+  m_Layer: 3
   m_Name: Player Object (component)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -5224,8 +5239,8 @@ PolygonCollider2D:
   m_AutoTiling: 0
   m_Points:
     m_Paths:
-    - - {x: 1.3118176, y: 1.4840657}
-      - {x: 0.20120442, y: 2.135959}
+    - - {x: 1.3023516, y: 1.4556671}
+      - {x: 0.18463862, y: 2.1004608}
       - {x: -0.13782626, y: 1.9451586}
       - {x: -0.17316568, y: 1.3366388}
       - {x: 0.09557736, y: 1.198221}

@@ -84,7 +84,6 @@ public class ChattingUI : Singleton<ChattingUI>, IPointerEnterHandler, IPointerE
 
     public void SetChattingText(string text)
     {
-        TextBuilder.Length = 0;
         OutputTextField.text += TextBuilder.ClearJoint(text, ReadonlyString_NewLine);
     }
 

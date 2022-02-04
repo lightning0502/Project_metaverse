@@ -1,10 +1,5 @@
-﻿using UnityEngine.UI;
-using System;
-using System.Text;
-using System.IO;
-using UnityEngine;
+﻿using UnityEngine;
 using Extension;
-using System.Collections;
 using System.Collections.Generic;
 
 public class PlayerManager : Singleton<PlayerManager>

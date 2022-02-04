@@ -23,8 +23,7 @@ public class ScriptManager : Singleton<ScriptManager>
         Application.targetFrameRate = 40;
 
         // 회전 고정
-        // Screen.orientation = ScreenOrientation.Portrait;
-        Screen.orientation = ScreenOrientation.AutoRotation;
+        Screen.orientation = ScreenOrientation.Landscape;
         Screen.autorotateToPortrait = false;
         Screen.autorotateToPortraitUpsideDown = false;
         Screen.autorotateToLandscapeLeft = true;

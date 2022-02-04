@@ -89,7 +89,7 @@ public class MessageManager : Singleton<MessageManager>
                 byte[] data = MessageQueue_ChattingText.Dequeue();
                 ChattingUIInstance.SetChattingText(Encoding.UTF8.GetString(data, offset_8, data.Length - offset_8));
 
-                yield return Coop.WaitForSeconds(0.25f);
+                yield return Coop.WaitForSeconds(0.2f);
             }
         }
     }
@@ -119,9 +119,6 @@ public class MessageManager : Singleton<MessageManager>
             Writer.Write(byteData);
 
             WebSocketInstance.Send(((MemoryStream)Writer.BaseStream).ToArray());
-
-            Writer.Close();
-            Writer.Dispose();
         }
     }
 
@@ -129,7 +126,7 @@ public class MessageManager : Singleton<MessageManager>
     {
         using (Reader = new BinaryReader(new MemoryStream(byteData)))
         {
-            // skip ProtocolType
+            // protocol type
             TemporaryInformation.ProtocolType = Reader.ReadInt32();
 
             // information
@@ -153,9 +150,6 @@ public class MessageManager : Singleton<MessageManager>
             TemporaryInformation.Player_XPosition = Reader.ReadSingle();
             TemporaryInformation.Player_YPosition = Reader.ReadSingle();
 
-            Reader.Close();
-            Reader.Dispose();
-
             return TemporaryInformation;
         }
     }
@@ -170,9 +164,6 @@ public class MessageManager : Singleton<MessageManager>
             Writer.Write(localPosition.y);
 
             WebSocketInstance.Send(((MemoryStream)(Writer.BaseStream)).ToArray());
-
-            Writer.Close();
-            Writer.Dispose();
         }
     }
 }

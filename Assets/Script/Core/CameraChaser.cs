@@ -1,5 +1,4 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using Extension;
 
@@ -7,11 +6,12 @@ public class CameraChaser : Singleton<CameraChaser>
 {
     public Camera MainCamera;
 
-    // values
+    // ui object
     private Transform PlayerTransform;
-    private GameObject PlayerGameObject;
     private Transform CameraTransform;
-    private Vector3 CameraPosition;
+
+    // values
+    public float CameraMoveTimer;
 
     // readonly
     private readonly float ReadonlyFloat_MaximumMapPositionX = 12.4f;
@@ -23,7 +23,7 @@ public class CameraChaser : Singleton<CameraChaser>
         CameraTransform = MainCamera.transform;
     }
 
-    public void SetCameraMove(Transform playerObject)
+    public void SetCameraSmoothMove(Transform playerObject)
     {
         if (object.ReferenceEquals(playerObject, null))
         {
@@ -32,39 +32,41 @@ public class CameraChaser : Singleton<CameraChaser>
         }
 
         PlayerTransform = playerObject;
-        PlayerGameObject = PlayerTransform.gameObject;
-
-        StartCoroutine(StartCameraMove());
+        StartCoroutine(SmoothMoveCoroutine());
     }
 
-    private IEnumerator StartCameraMove()
+    private IEnumerator SmoothMoveCoroutine()
     {
-        float playerX, playerY;
+        Vector3 offset;
+        GameObject playerObject = PlayerTransform.gameObject;
 
-        while (PlayerGameObject.activeSelf)
+        while (playerObject.activeSelf)
         {
-            playerX = PlayerTransform.localPosition.x;
-            playerY = PlayerTransform.localPosition.y;
-
-            CameraTransform.SetPosition(playerX, playerY, ReadonlyInt_MinusZPosition);
-            CameraPosition = CameraTransform.localPosition;
-
-            if (Input.anyKey)
+            if (CameraMoveTimer > 0)
             {
-                if (CameraPosition.x < -ReadonlyFloat_MaximumMapPositionX)
-                    CameraTransform.SetPosition(-ReadonlyFloat_MaximumMapPositionX, CameraPosition.y, ReadonlyInt_MinusZPosition);
+                // camera follow
+                offset = Vector3.Lerp(CameraTransform.localPosition, PlayerTransform.localPosition, 0.05f);
+                offset.z = ReadonlyInt_MinusZPosition;
+                CameraTransform.localPosition = offset;
 
-                else if (CameraPosition.x > ReadonlyFloat_MaximumMapPositionX)
-                    CameraTransform.SetPosition(ReadonlyFloat_MaximumMapPositionX, playerY, ReadonlyInt_MinusZPosition);
+                if (offset.x < -ReadonlyFloat_MaximumMapPositionX)
+                    CameraTransform.SetPosition(-ReadonlyFloat_MaximumMapPositionX, CameraTransform.localPosition.y, ReadonlyInt_MinusZPosition);
 
-                if (CameraPosition.y < -ReadonlyFloat_MaximumMapPositionY)
-                    CameraTransform.SetPosition(CameraPosition.x, -ReadonlyFloat_MaximumMapPositionY, ReadonlyInt_MinusZPosition);
+                else if (offset.x > ReadonlyFloat_MaximumMapPositionX)
+                    CameraTransform.SetPosition(ReadonlyFloat_MaximumMapPositionX, CameraTransform.localPosition.y, ReadonlyInt_MinusZPosition);
 
-                else if (CameraPosition.y > ReadonlyFloat_MaximumMapPositionY)
-                    CameraTransform.SetPosition(CameraPosition.x, ReadonlyFloat_MaximumMapPositionY, ReadonlyInt_MinusZPosition);
+                if (offset.y < -ReadonlyFloat_MaximumMapPositionY)
+                    CameraTransform.SetPosition(CameraTransform.localPosition.x, -ReadonlyFloat_MaximumMapPositionY, ReadonlyInt_MinusZPosition);
+
+                else if (offset.y > ReadonlyFloat_MaximumMapPositionY)
+                    CameraTransform.SetPosition(CameraTransform.localPosition.x, ReadonlyFloat_MaximumMapPositionY, ReadonlyInt_MinusZPosition);
+
+                CameraMoveTimer -= 0.01f;
+                yield return Coop.WaitForSeconds(0.01f);
             }
 
-            yield return Coop.WaitForSeconds(0.02f);
+            else
+                yield return Coop.WaitForSeconds(1);
         }
     }
 }

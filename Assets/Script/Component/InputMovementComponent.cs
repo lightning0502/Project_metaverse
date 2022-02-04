@@ -12,6 +12,7 @@ public class InputMovementComponent : MonoBehaviour
 
     // instance
     private SpriteAnimationComponent AnimationComponentInstance;
+    private CameraChaser CameraChaserInstance;
     private MessageManager MessageManagerInstance;
 
     // readonly
@@ -25,15 +26,14 @@ public class InputMovementComponent : MonoBehaviour
 
     // values
     private int CurrentID;
-    private bool OnLerp_MoveX;
-    private bool OnLerp_MoveY;
+    private bool OnLerp;
     private Vector3 GoalPosition;
 
     private void Awake()
     {
         MessageManagerInstance = MessageManager.Instance;
-        OnLerp_MoveX = false;
-        OnLerp_MoveY = false;
+        CameraChaserInstance = CameraChaser.Instance;
+        OnLerp = false;
         GoalPosition = Vector2.zero;
     }
 
@@ -46,43 +46,38 @@ public class InputMovementComponent : MonoBehaviour
         CurrentID = id;
 
         if (isOtherPlayer)
-        {
-
             return;
-        }
 
-        CameraChaser.Instance.SetCameraMove(PlayerTransform);
+        CameraChaserInstance.SetCameraSmoothMove(PlayerTransform);
         StartCoroutine(InputChecker());
+        StartCoroutine(MoveChecker());
     }
 
     public void OnLerpMove(Vector3 vectorPosition)
     {
-        Debug.Log("id : " + CurrentID + " / SetLocalPosition : " + vectorPosition);
-        PlayerTransform.localPosition = vectorPosition;
+        GoalPosition = vectorPosition;
 
-        if (OnLerp_MoveX)
+        if (OnLerp)
             return;
 
-        // StartCoroutine(StartLerpMove());
+        OnLerp = true;
+        StartCoroutine(StartLerpMove());
     }
 
-    /*
-        private IEnumerator StartLerpMove()
+    private IEnumerator StartLerpMove()
+    {
+        AnimationComponentInstance.OnMoveAnimation = true;
+
+        while (Mathf.Approximately(PlayerTransform.localPosition.x, GoalPosition.x) == false && Mathf.Approximately(PlayerTransform.localPosition.y, GoalPosition.y) == false)
         {
-            OnLerp_MoveX = true;
-
-            while (LerpTimer > 0)
-            {
-                yield return Coop.WaitForSeconds(0.08f);
-
-                AnimationComponentInstance.OnMoveAnimation = true;
-                PlayerTransform.localPosition = GoalPosition;
-            }
-
-            AnimationComponentInstance.OnMoveAnimation = false;
-            OnLerp_MoveX = false;
+            AnimationComponentInstance.SpriteFlipX = PlayerTransform.localPosition.x < GoalPosition.x;
+            PlayerTransform.localPosition = Vector3.MoveTowards(PlayerTransform.localPosition, GoalPosition, 0.07f);
+            yield return Coop.WaitForSeconds(0.02f);
         }
-        */
+
+        AnimationComponentInstance.OnMoveAnimation = false;
+        OnLerp = false;
+    }
 
     private bool OnArrowInputKey(ref bool onLeft, ref bool onRight)
     {
@@ -120,9 +115,13 @@ public class InputMovementComponent : MonoBehaviour
                 offset.y = Input.GetAxis(ReadonlyString_Vertical) * ReadonlyFloat_MovePower;
                 PlayerRigidbody2D.velocity = offset;
 
+                // animation controls
                 FlipXChecker(onLeft, onRight);
                 AnimationComponentInstance.OnMoveAnimation = true;
-                MessageManagerInstance.SendInformation(CurrentID, PlayerTransform.localPosition);
+
+                // camera follow move
+                CameraChaserInstance.CameraMoveTimer = 1;
+
                 yield return Coop.WaitForSeconds(0.08f);
             }
 
@@ -133,6 +132,25 @@ public class InputMovementComponent : MonoBehaviour
             }
         }
 
-        Debug.Log("Input End!");
+        Debug.LogError("InputChecker End!");
+    }
+
+    private IEnumerator MoveChecker()
+    {
+        bool onLeft = false, onRight = false;
+
+        while (gameObject.activeSelf)
+        {
+            if (OnArrowInputKey(ref onLeft, ref onRight))
+            {
+                MessageManagerInstance.SendInformation(CurrentID, PlayerTransform.localPosition);
+                yield return Coop.WaitForSeconds(0.33f);
+            }
+
+            else
+                yield return Coop.WaitForSeconds(0.5f);
+        }
+
+        Debug.LogError("MoveChecker End!");
     }
 }
