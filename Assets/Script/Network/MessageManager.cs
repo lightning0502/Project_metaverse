@@ -2,7 +2,6 @@ using System.Text;
 using System.IO;
 using System.Collections;
 using System.Collections.Generic;
-using System;
 using UnityEngine;
 
 public class MessageManager : Singleton<MessageManager>
@@ -41,20 +40,17 @@ public class MessageManager : Singleton<MessageManager>
 
     private void Awake()
     {
-        ChattingUIInstance = ChattingUI.Instance;
         WebSocketInstance = WebSocketClient.Instance;
         PlayerInformationInstance = PlayerManager.Instance;
         MessageQueue_ChattingText = new Queue<byte[]>();
         MessageQueue_PlayerInformation = new Queue<PlayerInformation>();
-
-        StartCoroutine(MessageCheckCoroutine_Chatting());
-        StartCoroutine(MessageCheckCoroutine_PlayerInformation());
-        WebSocketInstance.Connect();
     }
 
-    private void OnApplicationQuit()
+    public void StartMessageChecker()
     {
-        WebSocketInstance.Close();
+        ChattingUIInstance = ChattingUI.Instance;
+        StartCoroutine(MessageCheckCoroutine_Chatting());
+        StartCoroutine(MessageCheckCoroutine_PlayerInformation());
     }
 
     public void SetMessage_Information(int protocolType, byte[] byteData)

@@ -151,8 +151,8 @@ namespace WebGLSupport
                 Debug.LogError("Errpr -> mobile is not supported.");
             }
 
-            else
-                StartCoroutine(CoroutineUpdate());
+            // else
+            // StartCoroutine(CoroutineUpdate());
         }
 
         /// <summary>
@@ -345,19 +345,20 @@ namespace WebGLSupport
         private IEnumerator CoroutineUpdate()
         {
             // focus this id
-            if (!WebGLInputPlugin.WebGLInputIsFocus(id))
-                WebGLInputPlugin.WebGLInputFocus(id);
-
-            DebugText.Instance.LogError("WebGLInputFocus : ", id);
+            // if (!WebGLInputPlugin.WebGLInputIsFocus(id))
+            // WebGLInputPlugin.WebGLInputFocus(id);
 
             while (gameObject.activeSelf)
             {
-                if (input.isFocused)
-                    OnSelect();
+                if (input.isFocused == false)
+                    yield return Coop.WaitForSeconds(1);
+
 
                 else
                 {
-                    CheckOutFocus();
+                    OnSelect();
+                    WebGLInputPlugin.WebGLInputFocus(id);
+                    // CheckOutFocus();
                     yield return Coop.WaitForSeconds(1);
                 }
 

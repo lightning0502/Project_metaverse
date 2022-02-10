@@ -5,22 +5,34 @@ using UnityEngine;
 public class ScriptManager : Singleton<ScriptManager>
 {
     // ui
-    public Transform ParentScene;
-    private List<GameObject> SceneScriptList;
+    public Transform ParentTransform_Scene;
+    public Transform ParentTransform_UI;
+
+    private List<GameObject> SceneList_ScriptObject;
+    private Dictionary<int, GameObject> SceneDictionary_UIObject;
+
     private GameObject CurrentScene;
+    private GameObject CurrentUI;
 
     public enum SceneIndex : int
     {
-        MainLobby = 0,
+        NONE = -1,
+
+        Main = 0,
+        Lobby = 1,
+        Map = 2,
     }
 
     private void Awake()
     {
         // 모니터 v싱크
-        QualitySettings.vSyncCount = 0;
+        QualitySettings.vSyncCount = 1;
 
-        // 프레임 고정
-        Application.targetFrameRate = 40;
+        // 프레임 고정, https://forum.unity.com/threads/rendering-without-using-requestanimationframe-for-the-main-loop.373331/
+        Application.targetFrameRate = Application.platform == RuntimePlatform.WebGLPlayer ? -1 : 60; // web browser only, best performance
+
+        // 백그라운드 실행
+        Application.runInBackground = true;
 
         // 회전 고정
         Screen.orientation = ScreenOrientation.Landscape;
@@ -39,19 +51,37 @@ public class ScriptManager : Singleton<ScriptManager>
         Time.timeScale = 1;
 
         // 디버그 모드 설정
-        // DebugText.Instance.OnDebugMode = Application.platform != RuntimePlatform.WindowsEditor;
-        DebugText.Instance.OnDebugMode = true;
+        DebugText.Instance.OnDebugMode = Application.platform != RuntimePlatform.WindowsEditor;
 
-        SceneScriptList = new List<GameObject>();
-        int i, count = ParentScene.childCount;
+        SceneList_ScriptObject = new List<GameObject>();
+        int i, count = ParentTransform_Scene.childCount;
         for (i = 0; i < count; ++i)
         {
-            // Debug.LogError("object name : " + SceneTransform.GetChild(i).gameObject);
-            SceneScriptList.Add(ParentScene.GetChild(i).gameObject);
-            SceneScriptList[i].SetActive(false);
+            SceneList_ScriptObject.Add(ParentTransform_Scene.GetChild(i).gameObject);
+            SceneList_ScriptObject[i].SetActive(false);
         }
 
-        OnScene(SceneIndex.MainLobby);
+        SceneDictionary_UIObject = new Dictionary<int, GameObject>();
+        count = ParentTransform_UI.childCount;
+        for (i = 0; i < count; ++i)
+        {
+            GameObject uiObject = ParentTransform_UI.GetChild(i).gameObject;
+            SceneDictionary_UIObject.Add(uiObject.layer, uiObject);
+            uiObject.SetActive(false);
+        }
+
+        // network
+        // Dispatcher dispatcher = new Dispatcher();
+        // WebSocketClient.Dispatcher = dispatcher;
+        // dispatcher.RegistHandler();
+        WebSocketClient.Instance.Connect();
+
+        OnScene(SceneIndex.Main);
+    }
+
+    private void OnApplicationQuit()
+    {
+        WebSocketClient.Instance.Close();
     }
 
     public IEnumerator OnScene(SceneIndex sceneName, float delay)
@@ -62,25 +92,49 @@ public class ScriptManager : Singleton<ScriptManager>
 
     public void OnScene(SceneIndex sceneName)
     {
-        int sceneIndex = (int)sceneName;
+        int index = SupportObjectSetActiver(sceneName);
 
-        // 이미 열려있는 scene
-        if (object.ReferenceEquals(CurrentScene, SceneScriptList[sceneIndex]))
+        // script
+        if (object.ReferenceEquals(CurrentScene, SceneList_ScriptObject[index]) || index == -1)
             return;
 
-        // 아무것도 열려있는 scene이 없을 때
-        if (object.ReferenceEquals(CurrentScene, null))
-        {
-            CurrentScene = SceneScriptList[sceneIndex];
-            CurrentScene.SetActive(true);
-        }
-
-        // scene 교체
-        else
-        {
+        else if (object.ReferenceEquals(CurrentScene, null) == false)
             CurrentScene.SetActive(false);
-            CurrentScene = SceneScriptList[sceneIndex];
-            CurrentScene.SetActive(true);
+
+        CurrentScene = SceneList_ScriptObject[index];
+        CurrentScene.SetActive(true);
+
+        // ui
+        if (SceneDictionary_UIObject.ContainsKey(index) == false || object.ReferenceEquals(SceneDictionary_UIObject[index], null))
+            return;
+
+        else if (object.ReferenceEquals(CurrentUI, null) == false)
+            CurrentUI.SetActive(false);
+
+        CurrentUI = SceneDictionary_UIObject[index];
+        CurrentUI.SetActive(true);
+    }
+
+    private int SupportObjectSetActiver(SceneIndex sceneName)
+    {
+        switch (sceneName)
+        {
+            default:
+            case SceneIndex.NONE:
+                DebugText.Instance.LogError("Error -> SceneSetActiver : ", sceneName);
+                return -1;
+
+            case SceneIndex.Main:
+
+                return 0;
+
+            case SceneIndex.Lobby:
+
+                return 1;
+
+            case SceneIndex.Map:
+                MessageManager.Instance.StartMessageChecker();
+                return 2;
         }
     }
 }

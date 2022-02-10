@@ -43,7 +43,7 @@ public class ChattingUI : Singleton<ChattingUI>, IPointerEnterHandler, IPointerE
         MessageManagerInstance = MessageManager.Instance;
     }
 
-    private void Start()
+    private void OnEnable()
     {
         OnMousePointerEnter = false;
         StartCoroutine(CheckCoroutine_ScrollHandlePosition());

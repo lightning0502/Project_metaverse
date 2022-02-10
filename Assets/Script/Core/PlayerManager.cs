@@ -6,7 +6,7 @@ public class PlayerManager : Singleton<PlayerManager>
 {
     // values
     private readonly int ReadonlyInt_MinusZPosition = -2;
-    private readonly int ReadonlyInt_CharacterScale_2 = 2;
+    // private readonly int ReadonlyInt_CharacterScale_2 = 2;
     private readonly int ReadonlyInt_LayerIgnoreCollision_3 = 3;
     private Vector3 VectorPosition;
 
@@ -29,12 +29,13 @@ public class PlayerManager : Singleton<PlayerManager>
         MessageManagerInstance = MessageManager.Instance;
         PlayerPrefab.SetActive(false);
 
-        // ignore player layer collision
+        /* // ignore player layer collision
         int playerLayer = LayerMask.NameToLayer("Ignore Collision");
         if (playerLayer != 3)
             DebugText.Instance.LogError("Error -> LayerMask.NameToLayer('ignore collision') : ", playerLayer);
 
         Physics2D.IgnoreLayerCollision(playerLayer, ReadonlyInt_LayerIgnoreCollision_3, true);
+        */
     }
 
     public void InformationDivider(PlayerInformation information)

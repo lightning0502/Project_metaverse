@@ -45,7 +45,7 @@ public class CameraChaser : Singleton<CameraChaser>
             if (CameraMoveTimer > 0)
             {
                 // camera follow
-                offset = Vector3.Lerp(CameraTransform.localPosition, PlayerTransform.localPosition, 0.05f);
+                offset = Vector3.Lerp(CameraTransform.localPosition, PlayerTransform.localPosition, 0.02f);
                 offset.z = ReadonlyInt_MinusZPosition;
                 CameraTransform.localPosition = offset;
 
@@ -63,6 +63,7 @@ public class CameraChaser : Singleton<CameraChaser>
 
                 CameraMoveTimer -= 0.01f;
                 yield return Coop.WaitForSeconds(0.01f);
+                Debug.Log(CameraMoveTimer);
             }
 
             else

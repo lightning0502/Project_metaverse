@@ -120,7 +120,7 @@ public class InputMovementComponent : MonoBehaviour
                 AnimationComponentInstance.OnMoveAnimation = true;
 
                 // camera follow move
-                CameraChaserInstance.CameraMoveTimer = 1;
+                CameraChaserInstance.CameraMoveTimer = 1.5f;
 
                 yield return Coop.WaitForSeconds(0.08f);
             }

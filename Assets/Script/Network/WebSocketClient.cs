@@ -2,20 +2,24 @@ using System;
 using UnityEngine;
 using HybridWebSocket;
 using System.Text;
+using Assets.Script.Network.Handler;
+using Assets.Script.Network;
 
 // https://github.com/sta/websocket-sharp
 public class WebSocketClient : Singleton<WebSocketClient>
 {
     private MessageManager MessageManagerInstance;
 
-    //string IP = "127.0.0.1";
     private readonly string IP = "183.100.13.54";
     private readonly string PORT = "80";
-    private readonly string SERVICE_NAME = "/Chat";
+    // private readonly string SERVICE_NAME = "/Chat";
+    private readonly string SERVICE_NAME = "/Service";
 
     private WebSocket _socket;
     private string _url;
     private bool IsInitialize;
+
+    // public static Dispatcher Dispatcher;
 
     private void Awake()
     {
@@ -42,6 +46,18 @@ public class WebSocketClient : Singleton<WebSocketClient>
 
     private void OnMessage(byte[] data)
     {
+        int protocolType = -1;
+
+        try
+        {
+            protocolType = BitConverter.ToInt32(data, 0);
+        }
+
+        catch (Exception error)
+        {
+            Debug.Log(error);
+        }
+
         /*
             1. 연결 함수호출(connect)후 콜백으로 연결결과 리턴받음
             2. 연결 성공(onopen)이면 메시지 수신대기시작하고 연결 실패(onclose)면 연결 오류 처리
@@ -53,18 +69,10 @@ public class WebSocketClient : Singleton<WebSocketClient>
             향후 수정예정 -> 캐릭터 정보 요청하고 응답받으면 응답받은 정보로 캐릭터 구성하고 다시 맵입장 메시지 보낸다음 맵입장결과 메시지받은 다음 맵에 띄운다.
         */
 
-        int protocolType = -1;
+        Debug.LogError("protocolType : " + protocolType);
+        // Dispatcher.Dispatch(this, protocolType, data);
 
-        try
-        {
-            protocolType = BitConverter.ToInt32(data, 0);
-        }
-
-        catch (Exception e)
-        {
-            Debug.Log(e);
-        }
-
+        /*
         if (protocolType == 1)
             MessageManagerInstance.SetMessage_Chatting = data;
 
@@ -73,6 +81,7 @@ public class WebSocketClient : Singleton<WebSocketClient>
 
         else
             Debug.LogError("OnMessage protocolType : " + protocolType);
+        */
     }
 
     private void OnClose(WebSocketCloseCode closeCode)
@@ -89,7 +98,14 @@ public class WebSocketClient : Singleton<WebSocketClient>
     private void OnOpen()
     {
         Debug.Log("socket open !");
-        // ChattingUIInstance.SetTextQueue = "connected to " + _url;
+
+        // string wallet = "0x1234567890";
+        // LoginHandler.SendLogin(this, wallet);
+
+        // 0x322Fcc2d398aa9FD3708719a8fE4077cF6C8B5fb // klaytn
+        // 0xdAa9671877150b734998316b145C94aE0579FBeD // metamask
+
+        //
     }
 
     public void Connect()
