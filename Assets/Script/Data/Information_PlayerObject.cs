@@ -1,7 +1,7 @@
 using UnityEngine;
 
 [SerializeField]
-public struct PlayerInformation // convert to ScriptableObject
+public struct Information_PlayerObject // convert to ScriptableObject
 {
     public int ProtocolType;
     public int Player_ID;

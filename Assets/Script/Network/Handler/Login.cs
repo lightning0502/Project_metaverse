@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 using UnityEngine;
 
 namespace Assets.Script.Network.Handler
@@ -51,13 +48,13 @@ namespace Assets.Script.Network.Handler
     {
         public int MessageType
         {
-            get { return (int)ProtocolType.LoginResponse; }
+            get { return (int)ProtocolType.Request_Login; }
         }
 
         public static void SendLogin(WebSocketClient session, string wallet)
         {
             LoginRequest request = new LoginRequest();
-            request.MessageType = (int)ProtocolType.LoginRequest;
+            request.MessageType = (int)ProtocolType.Request_Login;
             request.Wallet = wallet;
 
             byte[] data = request.Serialize();
@@ -69,10 +66,11 @@ namespace Assets.Script.Network.Handler
             try
             {
                 LoginResponse response = LoginResponse.Create(message);
-                if (response.ResultCode == ErrorPage.Success)
+                if (ResultCode.Instance.IsOK(response.ResultCode))
                 {
                     // todo : 인증성공
                 }
+
                 else
                 {
                     // todo : 오류 처리

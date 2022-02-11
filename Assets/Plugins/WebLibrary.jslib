@@ -10,13 +10,13 @@ mergeInto(LibraryManager.library, {
         return window.accounts ? true : false;
     },
 
-    Request_BrowserAlert: function (str) {
+    Request_OnAlert: function (str) {
         window.alert(Pointer_stringify(str));
     },
 
     Request_GetAccountID : function()
     {
-        var returnStr = window.accounts.result[0];
+        var returnStr = window.accounts;
         var bufferSize = lengthBytesUTF8(returnStr) + 1;
         var buffer = _malloc(bufferSize);
         stringToUTF8(returnStr, buffer, bufferSize);
@@ -32,11 +32,4 @@ mergeInto(LibraryManager.library, {
         return x + y;
     },
 
-    StringReturnValueFunction: function () {
-        var returnStr = "blabla string";
-        var bufferSize = lengthBytesUTF8(returnStr) + 1;
-        var buffer = _malloc(bufferSize);
-        stringToUTF8(returnStr, buffer, bufferSize);
-        return buffer;
-    },
 });

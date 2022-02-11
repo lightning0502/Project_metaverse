@@ -1,4 +1,4 @@
-// initializer
+// WebGL initializer
 
 /*
     <script type="module" src="https://cdn.jsdelivr.net/npm/web3@latest/dist/web3.min.js"></script>
@@ -18,9 +18,10 @@ if (audioContext.state === 'suspended') {
         // TODO: Call audioContext.resume() after user gesture.
     }
 }
-console.error("audioContext.state : " + audioContext.state);
 
 if (window.ethereum) {
+    // initialize
+    window.accounts = null;
     web3 = new Web3(window.ethereum);
     console.error("web3 : ", web3);
     console.error("utils : ", web3.utils);
@@ -28,39 +29,25 @@ if (window.ethereum) {
     console.error("providers : ", web3.providers);
     console.error("modules : ", web3.modules); // undefined
 
-    window.ethereum.send('eth_requestAccounts').then(async (accounts) => {
-        window.accounts = await accounts;
-        console.log("window.accounts : ", window.accounts);
-    });
+    alert("연동하실 계정을 하나만 선택해주세요. 중복으로 선택해도 1개만 활성화됩니다." + '\n' + "Please select only one account to link. Even if you select duplicate, only one will be active.");
 
-    /*
-    window.ethereum.enable();
-    try { // connect popup
-        // window.ethereum.enable().then(function () {
-        window.ethereum.on("accountsChanged", function () {
-            location.reload();
-            console.error("location : ", location);
+    // request wallet account with metamask
+    window.ethereum.request({ method: "eth_requestAccounts" }).then(async (accounts) => {
+        // 여러개의 계정을 선택해도 한 개만 연동됨.
+        window.accounts = accounts[0];
 
-            // const accounts = await web3.eth.getAccounts();
-        });
-
-    } catch (error) {
-        if (error.code === 4001) {
-            // User rejected request
-            alert("로그인을 해주세요!");
-        }
-
-        else
-            alert(error.code);
-    }
-    */
-
-    /*
-    async () => {
         const balance = await web3.eth.getBalance(accounts[0]);
-        console.log("balance", web3.utils.fromWei(balance, "ether"));
-    };
-    */
+        console.log("current balance : ", web3.utils.fromWei(balance, "ether"));
+
+    }).catch((error) => {
+        alert("error code : " + error.code + " / " + error.message + " page will be refreshed.");
+
+        if (error.code === 4001) { // reject from user
+            setTimeout(function () {
+                window.location.reload();
+            }, 5000);
+        }
+    });
 }
 
 else

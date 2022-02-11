@@ -14,10 +14,10 @@ public class MessageManager : Singleton<MessageManager>
     // values
     private BinaryWriter Writer;
     private BinaryReader Reader;
-    private PlayerInformation TemporaryInformation;
+    private Information_PlayerObject TemporaryInformation;
 
     // message handler
-    private Queue<PlayerInformation> MessageQueue_PlayerInformation;
+    private Queue<Information_PlayerObject> MessageQueue_PlayerInformation;
     private Queue<byte[]> MessageQueue_ChattingText;
     public byte[] SetMessage_Chatting
     {
@@ -43,33 +43,34 @@ public class MessageManager : Singleton<MessageManager>
         WebSocketInstance = WebSocketClient.Instance;
         PlayerInformationInstance = PlayerManager.Instance;
         MessageQueue_ChattingText = new Queue<byte[]>();
-        MessageQueue_PlayerInformation = new Queue<PlayerInformation>();
+        MessageQueue_PlayerInformation = new Queue<Information_PlayerObject>();
     }
 
     public void StartMessageChecker()
     {
         ChattingUIInstance = ChattingUI.Instance;
-        StartCoroutine(MessageCheckCoroutine_Chatting());
-        StartCoroutine(MessageCheckCoroutine_PlayerInformation());
+        // StartCoroutine(MessageCheckCoroutine_Chatting());
+        // StartCoroutine(MessageCheckCoroutine_PlayerInformation());
     }
 
-    public void SetMessage_Information(int protocolType, byte[] byteData)
-    {
-        switch ((ProtocolType)protocolType)
+    /*
+        public void SetMessage_Information(int protocolType, byte[] byteData)
         {
-            default:
-            case ProtocolType.NONE:
-            case ProtocolType.Chatting:
-                DebugText.Instance.LogError("Error -> MessageCheckCoroutine_Information protocolType : ", protocolType);
-                return;
+            switch ((ProtocolType)protocolType)
+            {
+                default:
+                case ProtocolType.NONE:
+                case ProtocolType.Chatting:
+                    DebugText.Instance.LogError("Error -> MessageCheckCoroutine_Information protocolType : ", protocolType);
+                    return;
 
-            case ProtocolType.PlayerEnter: // 캐릭터 입장
-            case ProtocolType.PlayerMove: // 이동
-            case ProtocolType.PlayerExit: // 로그아웃
-                MessageQueue_PlayerInformation.Enqueue(GetPlayerInformation(byteData));
-                break;
+                case ProtocolType.PlayerEnter: // 캐릭터 입장
+                case ProtocolType.PlayerMove: // 이동
+                case ProtocolType.PlayerExit: // 로그아웃
+                    MessageQueue_PlayerInformation.Enqueue(GetPlayerInformation(byteData));
+                    break;
+            }
         }
-    }
 
     private IEnumerator MessageCheckCoroutine_Chatting()
     {
@@ -104,6 +105,7 @@ public class MessageManager : Singleton<MessageManager>
             }
         }
     }
+    */
 
     public void ToArray_Chatting(string message)
     {
@@ -118,37 +120,39 @@ public class MessageManager : Singleton<MessageManager>
         }
     }
 
-    private PlayerInformation GetPlayerInformation(byte[] byteData)
-    {
-        using (Reader = new BinaryReader(new MemoryStream(byteData)))
+    /*
+        private PlayerInformation GetPlayerInformation(byte[] byteData)
         {
-            // protocol type
-            TemporaryInformation.ProtocolType = Reader.ReadInt32();
-
-            // information
-            TemporaryInformation.Player_ID = Reader.ReadInt32();
-
-            // flag exit
-            if (TemporaryInformation.ProtocolType == 4)
-                return TemporaryInformation;
-
-            else if (TemporaryInformation.ProtocolType == 2)
+            using (Reader = new BinaryReader(new MemoryStream(byteData)))
             {
-                int dataLength = Reader.ReadInt32();
-                byte[] nameData = Reader.ReadBytes(dataLength);
-                TemporaryInformation.Player_Nickname = Encoding.UTF8.GetString(nameData);
+                // protocol type
+                TemporaryInformation.ProtocolType = Reader.ReadInt32();
+
+                // information
+                TemporaryInformation.Player_ID = Reader.ReadInt32();
+
+                // flag exit
+                if (TemporaryInformation.ProtocolType == 4)
+                    return TemporaryInformation;
+
+                else if (TemporaryInformation.ProtocolType == 2)
+                {
+                    int dataLength = Reader.ReadInt32();
+                    byte[] nameData = Reader.ReadBytes(dataLength);
+                    TemporaryInformation.Player_Nickname = Encoding.UTF8.GetString(nameData);
+                }
+
+                else
+                    TemporaryInformation.Player_Nickname = string.Empty;
+
+                // position
+                TemporaryInformation.Player_XPosition = Reader.ReadSingle();
+                TemporaryInformation.Player_YPosition = Reader.ReadSingle();
+
+                return TemporaryInformation;
             }
-
-            else
-                TemporaryInformation.Player_Nickname = string.Empty;
-
-            // position
-            TemporaryInformation.Player_XPosition = Reader.ReadSingle();
-            TemporaryInformation.Player_YPosition = Reader.ReadSingle();
-
-            return TemporaryInformation;
         }
-    }
+        */
 
     public void SendInformation(int id, Vector2 localPosition)
     {

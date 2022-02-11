@@ -22,7 +22,7 @@ public class JavaScriptLibrary : Singleton<JavaScriptLibrary>
     private static extern string Request_GetAccountID();
 
     [DllImport("__Internal")]
-    private static extern void Request_BrowserAlert(string str);
+    private static extern void Request_OnAlert(string str);
 
     [DllImport("__Internal")]
     private static extern void PrintFloatArray(float[] array, int size);
@@ -30,8 +30,18 @@ public class JavaScriptLibrary : Singleton<JavaScriptLibrary>
     [DllImport("__Internal")]
     private static extern int AddNumbers(int x, int y);
 
+    /*
     [DllImport("__Internal")]
     private static extern string StringReturnValueFunction();
+    StringReturnValueFunction: function()
+    {
+        var returnStr = "blabla string";
+        var bufferSize = lengthBytesUTF8(returnStr) + 1;
+        var buffer = _malloc(bufferSize);
+        stringToUTF8(returnStr, buffer, bufferSize);
+        return buffer;
+    },
+    */
 
     /*
     [DllImport("__Internal")]
@@ -41,45 +51,69 @@ public class JavaScriptLibrary : Singleton<JavaScriptLibrary>
     },
     */
 
-    public bool IsExistAccountID;
+    // values
+    private bool IsExistAccountID;
     private string CurrentAccountID;
-    public string GetCurrentID
+    public string GetCurrentAccountID
     {
         get
         {
-            return CurrentAccountID;
+            if (Application.platform == RuntimePlatform.WindowsEditor)
+            {
+                // return 0x322Fcc2d398aa9FD3708719a8fE4077cF6C8B5fb // klaytn
+                return "0xdAa9671877150b734998316b145C94aE0579FBeD"; // metamask
+            }
+
+            else
+                return CurrentAccountID;
         }
     }
 
-    public void GetAccountWalletID()
+    // readonly
+    private readonly string ReadonlyString_SpaceBar = " ";
+
+    private void Awake()
     {
-        StartCoroutine(JavaScriptCoroutine());
+        IsExistAccountID = false;
+        CurrentAccountID = string.Empty;
     }
 
-    public IEnumerator JavaScriptCoroutine()
+#if UNITY_WEBGL
+    public IEnumerator WaitingForAccountWalletLogin()
     {
-#if UNITY_WEBGL && UNITY_EDITOR == false
+        if (IsExistAccountID || CurrentAccountID.Length > 0)
+            yield break;
+
         if (Request_IsAliveWeb3())
         {
-            IsExistAccountID = false;
-
             while (IsExistAccountID == false)
             {
                 yield return Coop.WaitForSeconds(2);
                 IsExistAccountID = Request_IsExistAccountID();
-                Debug.LogError("Request_IsAccountID check!");
             }
         }
 
         else
         {
-            Request_BrowserAlert("Web3를 찾지 못했습니다.");
+            Request_OnAlert("Web3를 찾지 못했습니다. 메타마스크 확장 프로그램을 설치해주세요.");
             yield break;
         }
 
         CurrentAccountID = Request_GetAccountID();
-        Debug.Log("CurrentAccountID : " + CurrentAccountID);
-#endif
-        yield return null;
+
+        if (CurrentAccountID.Length == 0 || CurrentAccountID.Contains(ReadonlyString_SpaceBar)) // error code length 4
+        {
+            Request_OnAlert("error message : " + CurrentAccountID);
+            yield break;
+        }
+
+        Screen.fullScreen = false;
+        ActionTrigger.Instance.OnTrigger(ProtocolType.Request_Login);
     }
+
+    public void OnAlert(string noticeText)
+    {
+        Request_OnAlert(noticeText);
+    }
+#endif
 }

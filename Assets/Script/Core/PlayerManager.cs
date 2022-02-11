@@ -13,19 +13,16 @@ public class PlayerManager : Singleton<PlayerManager>
     public GameObject PlayerPrefab;
     public Transform ActivePlayerListTransform;
 
-    private int CurrentPlayerID;
-
     private Dictionary<int, GameObject> DictionaryObject_Player;
-    private Dictionary<int, PlayerInformation> DictionaryComponent_NetworkInformation;
+    private Dictionary<int, Information_PlayerObject> DictionaryComponent_NetworkInformation;
 
     // instance
     private MessageManager MessageManagerInstance;
 
     private void Awake()
     {
-        CurrentPlayerID = -10;
         DictionaryObject_Player = new Dictionary<int, GameObject>();
-        DictionaryComponent_NetworkInformation = new Dictionary<int, PlayerInformation>();
+        DictionaryComponent_NetworkInformation = new Dictionary<int, Information_PlayerObject>();
         MessageManagerInstance = MessageManager.Instance;
         PlayerPrefab.SetActive(false);
 
@@ -38,6 +35,7 @@ public class PlayerManager : Singleton<PlayerManager>
         */
     }
 
+    /*
     public void InformationDivider(PlayerInformation information)
     {
         int responseID = information.Player_ID;
@@ -119,4 +117,5 @@ public class PlayerManager : Singleton<PlayerManager>
     {
         component.OnLerpMove(vectorPosition);
     }
+    */
 }

@@ -2,33 +2,32 @@ using System;
 using UnityEngine;
 using HybridWebSocket;
 using System.Text;
-using Assets.Script.Network.Handler;
-using Assets.Script.Network;
+using System.Threading;
 
 // https://github.com/sta/websocket-sharp
 public class WebSocketClient : Singleton<WebSocketClient>
 {
-    private MessageManager MessageManagerInstance;
-
+    // readonly
     private readonly string IP = "183.100.13.54";
     private readonly string PORT = "80";
     // private readonly string SERVICE_NAME = "/Chat";
     private readonly string SERVICE_NAME = "/Service";
 
-    private WebSocket _socket;
+    // values
+    private ActionTrigger ActionTriggerInstance;
+    private WebSocket WebSocketInstance;
     private string _url;
     private bool IsInitialize;
-
-    // public static Dispatcher Dispatcher;
+    private SynchronizationContext SyncContext;
 
     private void Awake()
     {
         IsInitialize = false;
-        MessageManagerInstance = MessageManager.Instance;
+        ActionTriggerInstance = ActionTrigger.Instance;
         _url = "ws://" + IP + ":" + PORT + SERVICE_NAME;
     }
 
-    private void InitializeEventListener()
+    private void WebSocketConnector()
     {
         if (IsInitialize)
             return;
@@ -37,11 +36,12 @@ public class WebSocketClient : Singleton<WebSocketClient>
             IsInitialize = true;
 
         Debug.Log("socket initialize...");
-        _socket = WebSocketFactory.CreateInstance(_url);
-        _socket.OnOpen += OnOpen;
-        _socket.OnError += OnError;
-        _socket.OnClose += OnClose;
-        _socket.OnMessage += OnMessage;
+        SyncContext = SynchronizationContext.Current;
+        WebSocketInstance = WebSocketFactory.CreateInstance(_url);
+        WebSocketInstance.OnOpen += OnOpen;
+        WebSocketInstance.OnError += OnError;
+        WebSocketInstance.OnClose += OnClose;
+        WebSocketInstance.OnMessage += OnMessage;
     }
 
     private void OnMessage(byte[] data)
@@ -69,52 +69,60 @@ public class WebSocketClient : Singleton<WebSocketClient>
             향후 수정예정 -> 캐릭터 정보 요청하고 응답받으면 응답받은 정보로 캐릭터 구성하고 다시 맵입장 메시지 보낸다음 맵입장결과 메시지받은 다음 맵에 띄운다.
         */
 
-        Debug.LogError("protocolType : " + protocolType);
-        // Dispatcher.Dispatch(this, protocolType, data);
+        Debug.Log("on message protocolType : " + protocolType);
 
-        /*
-        if (protocolType == 1)
-            MessageManagerInstance.SetMessage_Chatting = data;
-
-        else if (protocolType > 1)
-            MessageManagerInstance.SetMessage_Information(protocolType, data);
+        if (Application.platform == RuntimePlatform.WindowsEditor)
+        {
+            ThreadPool.QueueUserWorkItem(delegate
+            {
+                SyncContext.Post(delegate
+                {
+                    ActionTriggerInstance.OnTrigger(protocolType, data);
+                }, null);
+            });
+        }
 
         else
-            Debug.LogError("OnMessage protocolType : " + protocolType);
-        */
+            ActionTriggerInstance.OnTrigger(protocolType, data);
     }
 
     private void OnClose(WebSocketCloseCode closeCode)
     {
-        Debug.Log("socket close : " + closeCode);
-        // MessageManagerInstance.SetMessageQueue = "disconnected from " + _url;
+        Debug.LogError("socket close : " + closeCode);
+        // TO DO :: restart application
     }
 
     private void OnError(string errorMessage)
     {
-        Debug.Log("socket error : " + errorMessage);
+        Debug.LogError("socket error : " + errorMessage);
     }
 
     private void OnOpen()
     {
         Debug.Log("socket open !");
 
-        // string wallet = "0x1234567890";
-        // LoginHandler.SendLogin(this, wallet);
+        if (Application.platform == RuntimePlatform.WindowsEditor)
+        {
+            ThreadPool.QueueUserWorkItem(delegate
+            {
+                SyncContext.Post(delegate
+                {
+                    ActionTriggerInstance.OnTrigger(ProtocolType.Request_Login);
+                }, null);
+            });
+        }
 
-        // 0x322Fcc2d398aa9FD3708719a8fE4077cF6C8B5fb // klaytn
-        // 0xdAa9671877150b734998316b145C94aE0579FBeD // metamask
-
-        //
+        else // will call to ActionTriggerInstance.OnActionTrigger(ProtocolType.Request_Login);
+            StartCoroutine(JavaScriptLibrary.Instance.WaitingForAccountWalletLogin());
     }
 
     public void Connect()
     {
-        InitializeEventListener();
+        WebSocketConnector();
 
         try
         {
-            _socket.Connect();
+            WebSocketInstance.Connect();
         }
 
         catch (Exception error)
@@ -127,7 +135,7 @@ public class WebSocketClient : Singleton<WebSocketClient>
     {
         try
         {
-            _socket.Send(message);
+            WebSocketInstance.Send(message);
         }
 
         catch (Exception error)
@@ -149,11 +157,11 @@ public class WebSocketClient : Singleton<WebSocketClient>
         }
     }
 
-    public void Close()
+    private void OnApplicationQuit()
     {
         try
         {
-            _socket.Close();
+            WebSocketInstance.Close();
         }
 
         catch (Exception error)
@@ -161,4 +169,11 @@ public class WebSocketClient : Singleton<WebSocketClient>
             DebugText.Instance.LogError(error);
         }
     }
+
+    /*
+    public void Close()
+    {
+
+    }
+    */
 }

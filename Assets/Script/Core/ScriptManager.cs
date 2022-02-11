@@ -34,6 +34,9 @@ public class ScriptManager : Singleton<ScriptManager>
         // 백그라운드 실행
         Application.runInBackground = true;
 
+        // 전체 화면
+        Screen.fullScreen = false;
+
         // 회전 고정
         Screen.orientation = ScreenOrientation.Landscape;
         Screen.autorotateToPortrait = false;
@@ -71,17 +74,9 @@ public class ScriptManager : Singleton<ScriptManager>
         }
 
         // network
-        // Dispatcher dispatcher = new Dispatcher();
-        // WebSocketClient.Dispatcher = dispatcher;
-        // dispatcher.RegistHandler();
         WebSocketClient.Instance.Connect();
 
         OnScene(SceneIndex.Main);
-    }
-
-    private void OnApplicationQuit()
-    {
-        WebSocketClient.Instance.Close();
     }
 
     public IEnumerator OnScene(SceneIndex sceneName, float delay)
