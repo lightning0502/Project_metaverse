@@ -3,6 +3,7 @@ using UnityEngine;
 using HybridWebSocket;
 using System.Text;
 using System.Threading;
+using System.Collections;
 
 // https://github.com/sta/websocket-sharp
 public class WebSocketClient : Singleton<WebSocketClient>
@@ -77,13 +78,13 @@ public class WebSocketClient : Singleton<WebSocketClient>
             {
                 SyncContext.Post(delegate
                 {
-                    ActionTriggerInstance.OnTrigger(protocolType, data);
+                    ActionTriggerInstance.OnResponseTrigger(protocolType, data);
                 }, null);
             });
         }
 
         else
-            ActionTriggerInstance.OnTrigger(protocolType, data);
+            ActionTriggerInstance.OnResponseTrigger(protocolType, data);
     }
 
     private void OnClose(WebSocketCloseCode closeCode)
@@ -107,7 +108,7 @@ public class WebSocketClient : Singleton<WebSocketClient>
             {
                 SyncContext.Post(delegate
                 {
-                    ActionTriggerInstance.OnTrigger(ProtocolType.Request_Login);
+                    ActionTriggerInstance.OnRequestTrigger(ProtocolType.Request_Login_0);
                 }, null);
             });
         }

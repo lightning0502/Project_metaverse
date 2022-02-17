@@ -6,61 +6,90 @@ using Extension;
 
 public class Scene_Main : Singleton<Scene_Main>
 {
-    public RawImage MainTitleImage;
-    public RawImage CompanyLogo;
-    public RawImage MainTitleBackgroundImage;
+    // ui
+    public RawImage BackgroundImage_Main;
+    public RawImage LogoImage_GameTitle;
+    public RawImage LogoImage_Company;
+    public RawImage Image_TouchToStart;
+    public GameObject Text_WaitingForLogin;
+    public bool IsAliveMainSceneObject
+    {
+        get
+        {
+            return gameObject.activeSelf;
+        }
+    }
 
     // readonly
-    private Color ReadonlyColor_Alpha = new Color(1, 1, 1, 0.02f);
+    private Color ReadonlyColor_Alpha = new Color(0, 0, 0, 0.02f);
     private float ReadonlyFloat_FrameTick = 0.04f;
-    private float ReadonlyFloat_Waiting = 1;
+
+    // values
+    private bool IsLoginOK;
 
     private void OnEnable()
     {
-        MainTitleImage.SetAlpha(0);
-        CompanyLogo.SetAlpha(0);
+        // initialize
+        IsLoginOK = false;
+
+        BackgroundImage_Main.SetAlpha(0);
+        LogoImage_Company.SetAlpha(0);
+        LogoImage_Company.gameObject.SetActive(true);
+        LogoImage_GameTitle.SetAlpha(0);
+        LogoImage_GameTitle.gameObject.SetActive(false);
+        Image_TouchToStart.gameObject.SetActive(false);
+        Text_WaitingForLogin.SetActive(false);
 
         StartCoroutine(MainTitleFlow());
     }
 
     public void LoginDivider(bool isLoginOk)
     {
-        if (isLoginOk)
-        {
-            Debug.Log("login OK!");
-        }
-
-        else // login failed
-        {
-            Debug.LogError("Login Failed");
-            JavaScriptLibrary.Instance.OnAlert("로그인을 해주세요! (Login Failed)");
-        }
+        IsLoginOK = isLoginOk;
     }
 
     private IEnumerator MainTitleFlow()
     {
-        yield return Coop.WaitForSeconds(ReadonlyFloat_Waiting);
+        // ui flow
+        yield return Coop.WaitForSeconds(1);
 
-        while (CompanyLogo.color.a < 1)
+        while (LogoImage_Company.color.a < 1)
         {
-            CompanyLogo.color += ReadonlyColor_Alpha;
+            LogoImage_Company.color += ReadonlyColor_Alpha;
             yield return Coop.WaitForSeconds(ReadonlyFloat_FrameTick);
         }
 
-        yield return Coop.WaitForSeconds(ReadonlyFloat_Waiting);
+        yield return Coop.WaitForSeconds(1);
 
-        while (CompanyLogo.color.a > 0)
+        while (LogoImage_Company.color.a > 0)
         {
-            CompanyLogo.color -= ReadonlyColor_Alpha;
+            LogoImage_Company.color -= ReadonlyColor_Alpha;
             yield return Coop.WaitForSeconds(ReadonlyFloat_FrameTick);
         }
 
-        yield return Coop.WaitForSeconds(ReadonlyFloat_Waiting);
+        yield return Coop.WaitForSeconds(1);
 
-        while (MainTitleImage.color.a < 1)
+        while (BackgroundImage_Main.color.a < 1)
         {
-            MainTitleImage.color += ReadonlyColor_Alpha;
+            BackgroundImage_Main.color += ReadonlyColor_Alpha;
             yield return Coop.WaitForSeconds(ReadonlyFloat_FrameTick);
         }
+
+        LogoImage_GameTitle.gameObject.SetActive(true);
+        while (LogoImage_GameTitle.color.a < 1)
+        {
+            LogoImage_GameTitle.color += ReadonlyColor_Alpha;
+            yield return Coop.WaitForSeconds(ReadonlyFloat_FrameTick);
+        }
+
+        // login information check & waiting
+        Text_WaitingForLogin.SetActive(true);
+        while (IsLoginOK == false)
+            yield return Coop.WaitForSeconds(1);
+
+        Text_WaitingForLogin.SetActive(false);
+        Image_TouchToStart.SetAlpha(0);
+        Image_TouchToStart.gameObject.SetActive(true);
+        Image_TouchToStart.AnimationAlphaRally(0.04f, 0.2f);
     }
 }

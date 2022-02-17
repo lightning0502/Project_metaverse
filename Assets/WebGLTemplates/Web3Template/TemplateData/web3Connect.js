@@ -21,7 +21,7 @@ if (audioContext.state === 'suspended') {
 
 if (window.ethereum) {
     // initialize
-    window.accounts = null;
+    window.accounts = undefined;
     web3 = new Web3(window.ethereum);
     console.error("web3 : ", web3);
     console.error("utils : ", web3.utils);

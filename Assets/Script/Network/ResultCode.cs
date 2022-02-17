@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using UnityEngine;
 
 public class ResultCode : Singleton<ResultCode>
 {
@@ -50,5 +51,10 @@ public class ResultCode : Singleton<ResultCode>
     {
         // TO DO :: notice ui for error code here.
         DebugText.Instance.LogError("OnNoticePopup : ", errorText);
+
+        if (Application.platform == RuntimePlatform.WindowsEditor)
+            return;
+
+        JavaScriptLibrary.Instance.OnAlert(errorText);
     }
 }

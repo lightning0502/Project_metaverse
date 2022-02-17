@@ -14,10 +14,10 @@ public class MessageManager : Singleton<MessageManager>
     // values
     private BinaryWriter Writer;
     private BinaryReader Reader;
-    private Information_PlayerObject TemporaryInformation;
+    // private Information_PlayerObject TemporaryInformation;
 
     // message handler
-    private Queue<Information_PlayerObject> MessageQueue_PlayerInformation;
+    // private Queue<Information_PlayerObject> MessageQueue_PlayerInformation;
     private Queue<byte[]> MessageQueue_ChattingText;
     public byte[] SetMessage_Chatting
     {
@@ -43,7 +43,7 @@ public class MessageManager : Singleton<MessageManager>
         WebSocketInstance = WebSocketClient.Instance;
         PlayerInformationInstance = PlayerManager.Instance;
         MessageQueue_ChattingText = new Queue<byte[]>();
-        MessageQueue_PlayerInformation = new Queue<Information_PlayerObject>();
+        // MessageQueue_PlayerInformation = new Queue<Information_PlayerObject>();
     }
 
     public void StartMessageChecker()

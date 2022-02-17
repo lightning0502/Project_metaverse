@@ -329,6 +329,16 @@ namespace Extension
             return color;
         }
 
+        public static void SetColor(this Image imageObject, float r, float g, float b)
+        {
+            imageObject.color = SetColor(r, g, b, imageObject.color.a);
+        }
+
+        public static void SetColor(this Text textObject, float r, float g, float b)
+        {
+            textObject.color = SetColor(r, g, b, textObject.color.a);
+        }
+
         public static void SetActiveForChild(this Transform objectTransform, bool onDisplay)
         {
             int i, length = objectTransform.childCount;
@@ -417,6 +427,34 @@ namespace Extension
                 }
             }
         }
+        /// <param name="alpha"> alpha Power : 0 ~ 0.5f </param>
+        public static void AnimationAlphaRally(this RawImage imageObject, float alpha, float delay)
+        {
+            ExtensionCoroutine.Instance.StartCoroutine(WorkAnimationAlphaRally(imageObject, alpha, delay));
+        }
+        private static IEnumerator WorkAnimationAlphaRally(RawImage imageObject, float alpha, float delay)
+        {
+            Color alphaColor = SetColor(0, 0, 0, alpha);
+
+            while (imageObject.gameObject.activeSelf)
+            {
+                while (imageObject.color.a < 1)
+                {
+                    imageObject.color += alphaColor;
+                    yield return Coop.WaitForSeconds(0.05f);
+                }
+
+                yield return Coop.WaitForSeconds(delay);
+
+                while (imageObject.color.a > 0.01f)
+                {
+                    imageObject.color -= alphaColor;
+                    yield return Coop.WaitForSeconds(0.05f);
+                }
+
+                yield return Coop.WaitForSeconds(delay);
+            }
+        }
         /*
         /// <param name="strongValue"> float : alpha power (ex : -0.1f or 0.1f) </param>
         public static void AnimationAlpha(this Image imageObject, float strongValue)
@@ -465,499 +503,7 @@ namespace Extension
 
             return -1;
         }
-
-        /// <param name="strongValue"> float : alpha power (ex : -0.1f or 0.1f) </param>
-        /// <param name="limit"> float : 0 ~ 1 </param>
-        public static void AnimationLimitAlpha(this Image imageObject, float strongValue, float limit)
-        {
-            ExtensionCoroutine.Instance.StartCoroutine(WorkAnimationLimitAlpha(imageObject, strongValue, limit));
-        }
-        private static IEnumerator WorkAnimationLimitAlpha(Image imageObject, float floatValue, float limit)
-        {
-            Color color = SetColor(0, 0, 0, floatValue);
-
-            if (floatValue > 0)
-            {
-                while (imageObject.color.a < limit)
-                {
-                    imageObject.color += color;
-                    yield return Coop.WaitForSeconds(0.05f);
-                }
-            }
-
-            else if (floatValue < 0)
-            {
-                while (imageObject.color.a > limit)
-                {
-                    imageObject.color += color;
-                    yield return Coop.WaitForSeconds(0.05f);
-                }
-            }
-        }
-
-        public static void AnimationOnHeal(this GameObject gameObject)
-        {
-            ExtensionCoroutine.Instance.StartCoroutine(WorkAnimationOnHeal(gameObject));
-        }
-        private static IEnumerator WorkAnimationOnHeal(GameObject gameObject)
-        {
-            Image objectImage = gameObject.GetComponent<Image>();
-            Color healColor = SetColor(0.05f, 0, 0.05f, 0);
-            // count 구현이 필요할까? 그리고 지속적인 힐링에 대해서는 어떻게 적용해야할까?? 조금 연하게..?
-            while (objectImage.color.b > 0.1f) // red 비교는 hit color와 문제를 일으킬 수 있다.
-            {
-                objectImage.color -= healColor;
-                yield return Coop.WaitForSeconds(0.02f);
-            }
-
-            yield return Coop.WaitForSeconds(0.5f);
-
-            while (objectImage.color.b < 1)
-            {
-                objectImage.color += healColor;
-                yield return Coop.WaitForSeconds(0.02f);
-            }
-
-            objectImage.color = Set Color(1, 1, 1, 1); // initialize
-        }
-
-        /// <param name="duration"> duration == 0 ? gameObject.activeInHierarchy : float </param>
-        public static void AnimationRotation(this Image imageObject, float strongValue)
-        {
-            ExtensionCoroutine.Instance.StartCoroutine(WorkAnimationRotation(imageObject.transform, imageObject.gameObject, strongValue));
-        }
-        private static IEnumerator WorkAnimationRotation(Transform imageTransform, GameObject imageObject, float strongValue)
-        {
-            while (imageObject.activeInHierarchy)
-            {
-                yield return Coop.WaitForSeconds(0.04f);
-                imageTransform.Rotate(0, 0, strongValue);
-            }
-        }
-
-        /*
-        /// <param name="colorIndex"> 0 = [fire][burn][flame], 1 = [poison][venom][toxic], 2 = [cold][chill][frost], 3 = [dark][curse], 4 = [heal] </param>
-        public static void AnimationStateColor(this GameObject gameObject, int colorIndex, float duration) // List로 변경해야함.
-        {
-            Image imageObject = gameObject.GetComponent<Image>();
-            IEnumerator stateCoroutine = WorkAnimationStateColor(imageObject, colorIndex);
-
-            ExtensionCoroutine.Instance.StartCoroutine(stateCoroutine);
-            ExtensionCoroutine.Instance.StartCoroutine(WorkAnimationStateTimer(stateCoroutine, imageObject, duration));
-        }
-        private static IEnumerator WorkAnimationStateColor(Image imageObject, int colorIndex)
-        {
-            Color setColor;
-            float colorChanger = 1f;
-            float timer = 0.05f;
-
-            switch (colorIndex)
-            {
-                default:
-                    DebugText.Instance.OnDebugText("Error : WorkAnimationStateColor, index : " + colorIndex);
-                    yield break;
-
-                case 0: // red
-                    setColor = SetColor(0.005f, 0.025f, 0.025f, 0);
-                    break;
-
-                case 1: // dark green (poison)
-                    setColor = SetColor(0.03f, 0.025f, 0.03f, 0);
-                    break;
-
-                case 2: // blue
-                    setColor = SetColor(0.025f, 0.02f, 0, 0);
-                    break;
-
-                case 3: // black
-                    setColor = SetColor(0.02f, 0.02f, 0.02f, 0);
-                    break;
-
-                case 4: // yellow green (healing)
-                    setColor = SetColor(0.02f, 0, 0.03f, 0);
-                    break;
-            }
-
-            while (true) // will be stop WorkAnimationStateTimer()
-            {
-                while (colorChanger > 0.15f)
-                {
-                    imageObject.color -= setColor;
-                    colorChanger -= 0.02f;
-                    yield return Coop.WaitForSeconds(timer);
-                }
-
-                while (colorChanger < 0.45f)
-                {
-                    imageObject.color += setColor;
-                    colorChanger += 0.02f;
-                    yield return Coop.WaitForSeconds(timer);
-                }
-            }
-        }
-
-        private static IEnumerator WorkAnimationStateTimer(IEnumerator stateCoroutine, Image imageObject, float duration)
-        {
-            float timer = 0.2f;
-
-            while (duration > 0f)
-            {
-                duration -= timer + Time.deltaTime;
-                yield return Coop.WaitForSeconds(timer);
-            }
-
-            ExtensionCoroutine.Instance.StopCoroutine(stateCoroutine);
-            stateCoroutine = null;
-            imageObject.color = Set Color(1, 1, 1, 1); // color initialize
-        }
-
-        /// <param name="blinkDuration"> float : blink time (0.01 ~ 2.0) and call with WorkAnimationHitEarthQuake() </param>
-        public static void AnimationHitBlink(this Image imageObject, float blinkDuration, int count)
-        {
-            // 일단 Animation HitBlink를 EarthQuake 기능과 Red hit animaton 기능과 떨어트려야함..
-            ExtensionCoroutine.Instance.StartCoroutine(WorkAnimationHitBlink(imageObject, blinkDuration, count, 0));
-        }
-        public static void AnimationHitBlink(this Image imageObject, float blinkDuration, int count, float delay)
-        {
-            ExtensionCoroutine.Instance.StartCoroutine(WorkAnimationHitBlink(imageObject, blinkDuration, count, delay));
-        }
-
-        public static void AnimationHitBlinkForSkill(this Image imageObject)
-        {
-            ExtensionCoroutine.Instance.StartCoroutine(WorkAnimationHitBlink(imageObject, 0.2f, 0, 0));
-        }
-        private static IEnumerator WorkAnimationHitEarthQuake(Transform trasformObject)
-        {
-            int i, count = 4;
-            int minValue = -30, maxValue = 30;
-
-            for (i = 0; i < count; ++i)
-            {
-                trasformObject.SetPosition(Random.Range(minValue, maxValue), Random.Range(minValue, maxValue), 0);
-                yield return Coop.WaitForSeconds(0.06f);
-                maxValue -= 5;
-                minValue += 5;
-            }
-
-            trasformObject.localPosition = SetVector3(0, 0, 0);
-        }
-
-        private static IEnumerator WorkAnimationHitBlink(Image imageObject, float blinkDuration, int count, float delay)
-        {
-            yield return Coop.WaitForSeconds(delay);
-
-            if (count > 0)
-            {
-                int i;
-                float time = blinkDuration * 0.5f;
-
-                for (i = 0; i < count; ++i)
-                {
-                    imageObject.color = ReadonlyColor_Red;
-                    yield return Coop.WaitForSeconds(time);
-                    ExtensionCoroutine.Instance.StartCoroutine(WorkAnimationHitEarthQuake(imageObject.transform));
-                    imageObject.color = ReadonlyColor_White;
-                    yield return Coop.WaitForSeconds(time);
-                }
-            }
-
-            else
-            {
-                imageObject.color = ReadonlyColor_Red;
-                ExtensionCoroutine.Instance.StartCoroutine(WorkAnimationHitEarthQuake(imageObject.transform));
-                yield return Coop.WaitForSeconds(blinkDuration);
-                imageObject.color = ReadonlyColor_White;
-            }
-        }
-
-        /// <param name="strongValue"> float </param>
-        /// <param name="onPositionDivider"> true : move x, false : move y </param>
-        public static void AnimationAccelMove(this Transform transformObject, bool onPositionDivider, float strongValue, float duration)
-        {
-            ExtensionCoroutine.Instance.StartCoroutine(WorkAnimationAccelMove(transformObject, onPositionDivider, strongValue, duration));
-        }
-        private static IEnumerator WorkAnimationAccelMove(Transform transformObject, bool onPositionDivider, float strongValue, float duration)
-        {
-            Vector3 vectorValue;
-            vectorValue.x = 0;
-            vectorValue.y = 0;
-            vectorValue.z = 0;
-
-            float acceleration = 3f;
-            bool onReverse = strongValue < 0 ? true : false;
-
-            while (duration > 0)
-            {
-                vectorValue = onPositionDivider ? SetVector3(acceleration, 0, 0) : SetVector3(0, acceleration, 0);
-                transformObject.localPosition += onReverse ? vectorValue : -vectorValue;
-                duration -= onReverse ? -strongValue : strongValue;
-                acceleration += onReverse ? strongValue : -strongValue;
-
-                yield return Coop.WaitForSeconds(0.02f);
-            }
-        }
-
-        /// <param name="isMinusMove"> isMinusMove == ture ? minus move : plus move </param>
-        /// <param name="onPositionDivider"> positionDivider ==  true ? move x : move y </param>
-        /// <param name="moveResist"> 0.1f ~ 2 </param>
-        public static void AnimationLimitMoveUI(this Transform transformObject, bool onPositionDivider, bool isMinusMove, float acceleration, float moveResist, float goalPosition)
-        {
-            ExtensionCoroutine.Instance.StartCoroutine(WorkAnimationLimitMoveUI(transformObject, onPositionDivider, isMinusMove, acceleration, moveResist, goalPosition));
-        }
-        private static IEnumerator WorkAnimationLimitMoveUI(Transform transformObject, bool onPositionDivider, bool isMinusMove, float acceleration, float moveResist, float goalPosition)
-        {
-            Vector3 vectorValue;
-            vectorValue.x = 0;
-            vectorValue.y = 0;
-            vectorValue.z = 0;
-
-            float accel = acceleration;
-            float checkValue = 0.3f;
-
-            if (onPositionDivider) // move to x
-            {
-                float saveYPos = transformObject.localPosition.y;
-                vectorValue = MethodExtension.SetVector3(accel, 0, 0);
-
-                if (isMinusMove)
-                {
-                    while (transformObject.localPosition.x > goalPosition)
-                    {
-                        accel -= moveResist;
-
-                        if (accel < checkValue)
-                            accel = checkValue;
-
-                        vectorValue = MethodExtension.SetVector3(accel, 0, 0);
-                        transformObject.localPosition -= vectorValue;
-                        yield return Coop.WaitForSeconds(0.02f);
-                    }
-                }
-
-                else
-                {
-                    while (transformObject.localPosition.x < goalPosition)
-                    {
-                        accel -= moveResist;
-
-                        if (accel < checkValue)
-                            accel = checkValue;
-
-                        vectorValue = MethodExtension.SetVector3(accel, 0, 0);
-                        transformObject.localPosition += vectorValue;
-                        yield return Coop.WaitForSeconds(0.02f);
-                    }
-                }
-
-                transformObject.SetPosition(goalPosition, saveYPos, 0); // goal position
-            }
-
-            else // move to y
-            {
-                float saveXPos = transformObject.localPosition.x;
-                vectorValue = MethodExtension.SetVector3(0, accel, 0);
-
-                if (isMinusMove)
-                {
-                    while (transformObject.localPosition.y > goalPosition)
-                    {
-                        accel -= moveResist;
-
-                        if (accel < checkValue)
-                            accel = checkValue;
-
-                        vectorValue = MethodExtension.SetVector3(0, accel, 0);
-                        transformObject.localPosition -= vectorValue;
-                        yield return Coop.WaitForSeconds(0.02f);
-                    }
-                }
-
-                else
-                {
-                    while (transformObject.localPosition.y < goalPosition)
-                    {
-                        accel -= moveResist;
-
-                        if (accel < checkValue)
-                            accel = checkValue;
-
-                        vectorValue = MethodExtension.SetVector3(0, accel, 0);
-                        transformObject.localPosition += vectorValue;
-                        yield return Coop.WaitForSeconds(0.02f);
-                    }
-                }
-
-                transformObject.SetPosition(saveXPos, goalPosition, 0); // goal position
-            }
-        }
-
-        /// <param name="isMinusMove"> isMinusMove == ture ? minus move : plus move </param>
-        /// <param name="onPositionDivider"> onPositionDivider ==  true ? move x : move y </param>
-        /// <param name="moveResist"> 0.1f ~ 2 </param>
-        public static void AnimationAccelMoveLimit(this Transform transformObject, bool onPositionDivider, bool isMinusMove, float moveResist, float goalXPos, float goalYPos)
-        {
-            ExtensionCoroutine.Instance.StartCoroutine(WorkAnimationAccelMoveLimit(transformObject, onPositionDivider, isMinusMove, moveResist, goalXPos, goalYPos));
-        }
-        private static IEnumerator WorkAnimationAccelMoveLimit(Transform transformObject, bool onPositionDivider, bool isMinusMove, float moveResist, float goalXPos, float goalYPos)
-        {
-            Vector3 vectorValue;
-            vectorValue.x = 0;
-            vectorValue.y = 0;
-            vectorValue.z = 0;
-
-            float acceleration = 20f, minimumValue = 0.2f;
-
-            if (onPositionDivider) // move to x
-            {
-                vectorValue.x = acceleration;
-                float goalNear = goalXPos * 1.15f;
-
-                if (isMinusMove)
-                {
-                    while (transformObject.localPosition.x > goalNear)
-                    {
-                        transformObject.localPosition -= vectorValue;
-                        yield return Coop.WaitForSeconds(0.02f);
-                    }
-
-                    while (transformObject.localPosition.x > goalXPos)
-                    {
-                        acceleration -= moveResist;
-
-                        if (acceleration < minimumValue)
-                            acceleration = minimumValue;
-
-                        vectorValue.x = acceleration;
-                        transformObject.localPosition -= vectorValue;
-                        yield return Coop.WaitForSeconds(0.02f);
-                    }
-                }
-
-                else
-                {
-                    if (goalNear > 0)
-                        goalNear = goalXPos * 0.8f;
-
-                    while (transformObject.localPosition.x < goalNear)
-                    {
-                        transformObject.localPosition += vectorValue;
-                        yield return Coop.WaitForSeconds(0.02f);
-                    }
-
-                    while (transformObject.localPosition.x < goalXPos)
-                    {
-                        acceleration -= moveResist;
-
-                        if (acceleration < minimumValue)
-                            acceleration = minimumValue;
-
-                        vectorValue.x = acceleration;
-                        transformObject.localPosition += vectorValue;
-                        yield return Coop.WaitForSeconds(0.02f);
-                    }
-                }
-            }
-
-            else // move to y
-            {
-                vectorValue.y = acceleration;
-                float goalNear = goalYPos * 1.15f;
-
-                if (isMinusMove)
-                {
-                    while (transformObject.localPosition.y > goalNear)
-                    {
-                        transformObject.localPosition -= vectorValue;
-                        yield return Coop.WaitForSeconds(0.02f);
-                    }
-
-                    while (transformObject.localPosition.y > goalYPos)
-                    {
-                        acceleration -= moveResist;
-
-                        if (acceleration < minimumValue)
-                            acceleration = minimumValue;
-
-                        vectorValue.y = acceleration;
-                        transformObject.localPosition -= vectorValue;
-                        yield return Coop.WaitForSeconds(0.02f);
-                    }
-                }
-
-                else
-                {
-                    if (goalNear > 0)
-                        goalNear = goalXPos * 0.8f;
-
-                    while (transformObject.localPosition.y < goalNear)
-                    {
-                        transformObject.localPosition += vectorValue;
-                        yield return Coop.WaitForSeconds(0.02f);
-                    }
-
-                    while (transformObject.localPosition.y < goalYPos)
-                    {
-                        acceleration -= moveResist;
-
-                        if (acceleration < minimumValue)
-                            acceleration = minimumValue;
-
-                        vectorValue.y = acceleration;
-                        transformObject.localPosition += vectorValue;
-                        yield return Coop.WaitForSeconds(0.02f);
-                    }
-                }
-            }
-
-            transformObject.SetPosition(goalXPos, goalYPos, 0); // goal position
-        }
-
-        /// <param name="alpha"> alpha Power : 0 ~ 0.5f </param>
-        public static void AnimationAlphaRally(this Image imageObject, float alpha, float delay)
-        {
-            ExtensionCoroutine.Instance.StartCoroutine(WorkAnimationAlphaRally(imageObject, alpha, delay));
-        }
-        private static IEnumerator WorkAnimationAlphaRally(Image imageObject, float alpha, float delay)
-        {
-            Color alphaColor = SetColor(0, 0, 0, alpha);
-
-            while (imageObject.gameObject.activeInHierarchy)
-            {
-                while (imageObject.color.a < 1)
-                {
-                    imageObject.color += alphaColor;
-                    yield return Coop.WaitForSeconds(0.05f);
-                }
-
-                yield return Coop.WaitForSeconds(delay);
-
-                while (imageObject.color.a > 0.01f)
-                {
-                    imageObject.color -= alphaColor;
-                    yield return Coop.WaitForSeconds(0.05f);
-                }
-
-                yield return Coop.WaitForSeconds(delay);
-            }
-        }
-    #endregion
-
-    #region Object Clear 를 하면 안되잖아...
-        public static void ClearChildObject(this GameObject parentObject)
-        {
-            int i, childCount = parentObject.transform.childCount;
-
-            for (i = 0; i < childCount; ++i)
-                MonoBehaviour.Destroy(parentObject.transform.GetChild(i).gameObject);
-        }
-        public static void ClearChildObject(this Transform transformObject)
-        {
-            int i, childCount = transformObject.childCount;
-
-            for (i = 0; i < childCount; ++i)
-                MonoBehaviour.Destroy(transformObject.GetChild(i).gameObject);
-        }
-    */
+        */
         #endregion
     }
 }

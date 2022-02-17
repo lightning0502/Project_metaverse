@@ -1,4 +1,8 @@
 mergeInto(LibraryManager.library, {
+    Request_AccoutClear : function()
+    {
+        window.accounts = undefined;
+    },
 
     Request_IsAliveWeb3 : function()
     {

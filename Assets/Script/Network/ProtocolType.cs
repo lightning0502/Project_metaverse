@@ -1,123 +1,109 @@
 ﻿
-/*
-public class MyEnumComparer : IEqualityComparer<MyEnum>
-{
-    public bool Equals(MyEnum x, MyEnum y)
-    {
-        return x == y;
-    }
-
-    public int GetHashCode(MyEnum x)
-    {
-        return (int)x;
-    }
-}
-*/
-/// request, response, notice
+/// type : request, response, notice
 public class ProtocolType
 {
     /// <summary>
-    /// 로그인 요청
+    /// 로그인 요청 : 0
     /// </summary>
-    public static readonly int Request_Login = 0,
+    public static readonly int Request_Login_0 = 0,
 
     /// <summary>
-    /// 로그인 응답
+    /// 로그인 응답 : 1
     /// </summary>
-    Response_Login = 1,
+    Response_Login_1 = 1,
 
     /// <summary>
-    /// 캐릭터정보요청
+    /// 캐릭터정보요청 : 10
     /// </summary>
-    Request_CharacterInformation = 10,
+    Request_CharacterInformation_10 = 10,
 
     /// <summary>
-    /// 캐릭터정보응답
+    /// 캐릭터정보응답 : 11
     /// </summary>
-    Response_CharacterInformation = 11,
+    Response_CharacterInformation_11 = 11,
 
     /// <summary>
-    /// 닉네임중복확인요청
+    /// 닉네임중복확인요청 : 12
     /// </summary>
-    Request_VerifyNickname = 12,
+    Request_VerifyNickname_12 = 12,
 
     /// <summary>
-    /// 닉네임중복확인응답
+    /// 닉네임중복확인응답 : 13
     /// </summary>
-    Response_VerifyNickname = 13,
+    Response_VerifyNickname_13 = 13,
 
     /// <summary>
-    /// 캐릭터생성요청
+    /// 캐릭터생성요청 : 14
     /// </summary>
-    Request_CreateCharacter = 14,
+    Request_CreateCharacter_14 = 14,
 
     /// <summary>
-    /// 캐릭터생성응답
+    /// 캐릭터생성응답 : 15
     /// </summary>
-    Response_CreateCharacter = 15,
+    Response_CreateCharacter_15 = 15,
 
     /// <summary>
-    /// 맵입장요청
+    /// 맵입장요청 : 20
     /// </summary>
-    Request_EnterWorld = 20,
+    Request_EnterWorld_20 = 20,
 
     /// <summary>
-    /// 맵입장응답
+    /// 맵입장응답 : 21
     /// </summary>
-    Response_EnterWorld = 21,
+    Response_EnterWorld_21 = 21,
 
     /// <summary>
-    /// 맵입장통보
+    /// 맵입장통보 : 22
     /// </summary>
-    Notice_EnterWorld = 22,
+    Notice_EnterWorld_22 = 22,
 
     /// <summary>
-    /// 맵퇴장요청
+    /// 맵퇴장요청 : 23
     /// </summary>
-    Request_ExitWorld = 23,
+    Request_ExitWorld_23 = 23,
 
     /// <summary>
-    /// 맵퇴장응답
+    /// 맵퇴장응답 : 24
     /// </summary>
-    Response_ExitWorld = 24,
+    Response_ExitWorld_24 = 24,
 
     /// <summary>
-    /// 맵퇴장통보
+    /// 맵퇴장통보 : 25
     /// </summary>
-    Notice_ExitWorld = 25,
+    Notice_ExitWorld_25 = 25,
 
     /// <summary>
-    /// 캐릭터이동요청
+    /// 캐릭터이동요청 : 26
     /// </summary>
-    Request_MoveWorld = 26,
+    Request_MoveWorld_26 = 26,
 
     /// <summary>
-    /// 캐릭터이동응답
+    /// 캐릭터이동응답 : 27
     /// </summary>
-    Response_MoveWorld = 27,
+    Response_MoveWorld_27 = 27,
 
     /// <summary>
-    /// 캐릭터이동통보
+    /// 캐릭터이동통보 : 28
     /// </summary>
-    Notice_MoveWorld = 28,
+    Notice_MoveWorld_28 = 28,
 
     /// <summary>
-    /// 시스템채팅통보
+    /// 시스템채팅통보 : 100
     /// </summary>
-    Notice_SystemChatting = 100,
+    Notice_SystemChatting_100 = 100,
 
     /// <summary>
-    /// 전체채팅요청
+    /// 전체채팅요청 : 110
     /// </summary>
-    Request_GlobalChatting = 110,
+    Request_GlobalChatting_110 = 110,
 
     /// <summary>
-    /// 전체채팅응답
+    /// 전체채팅응답 : 111
     /// </summary>
-    Response_GlobalChatting = 111,
+    Response_GlobalChatting_111 = 111,
 
     /// <summary>
-    /// 전체채팅통보
+    /// 전체채팅통보 : 112
     /// </summary>
     Notice_GlobalChatting = 112;
 }

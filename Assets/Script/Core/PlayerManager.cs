@@ -5,16 +5,16 @@ using System.Collections.Generic;
 public class PlayerManager : Singleton<PlayerManager>
 {
     // values
-    private readonly int ReadonlyInt_MinusZPosition = -2;
+    // private readonly int ReadonlyInt_MinusZPosition = -2;
     // private readonly int ReadonlyInt_CharacterScale_2 = 2;
-    private readonly int ReadonlyInt_LayerIgnoreCollision_3 = 3;
+    // private readonly int ReadonlyInt_LayerIgnoreCollision_3 = 3;
     private Vector3 VectorPosition;
 
-    public GameObject PlayerPrefab;
+    // public GameObject PlayerPrefab;
     public Transform ActivePlayerListTransform;
 
     private Dictionary<int, GameObject> DictionaryObject_Player;
-    private Dictionary<int, Information_PlayerObject> DictionaryComponent_NetworkInformation;
+    private Dictionary<int, Information_PlayerObject> NetworkDictionary_PlayerInformation;
 
     // instance
     private MessageManager MessageManagerInstance;
@@ -22,9 +22,10 @@ public class PlayerManager : Singleton<PlayerManager>
     private void Awake()
     {
         DictionaryObject_Player = new Dictionary<int, GameObject>();
-        DictionaryComponent_NetworkInformation = new Dictionary<int, Information_PlayerObject>();
+        NetworkDictionary_PlayerInformation = new Dictionary<int, Information_PlayerObject>();
+
         MessageManagerInstance = MessageManager.Instance;
-        PlayerPrefab.SetActive(false);
+        // PlayerPrefab.SetActive(false);
 
         /* // ignore player layer collision
         int playerLayer = LayerMask.NameToLayer("Ignore Collision");
@@ -33,6 +34,11 @@ public class PlayerManager : Singleton<PlayerManager>
 
         Physics2D.IgnoreLayerCollision(playerLayer, ReadonlyInt_LayerIgnoreCollision_3, true);
         */
+    }
+
+    public void AddPlayer(int id, in Information_PlayerObject playerObject)
+    {
+        NetworkDictionary_PlayerInformation.Add(id, playerObject);
     }
 
     /*

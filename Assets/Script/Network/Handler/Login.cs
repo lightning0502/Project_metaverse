@@ -48,13 +48,13 @@ namespace Assets.Script.Network.Handler
     {
         public int MessageType
         {
-            get { return (int)ProtocolType.Request_Login; }
+            get { return (int)ProtocolType.Request_Login_0; }
         }
 
         public static void SendLogin(WebSocketClient session, string wallet)
         {
             LoginRequest request = new LoginRequest();
-            request.MessageType = (int)ProtocolType.Request_Login;
+            request.MessageType = (int)ProtocolType.Request_Login_0;
             request.Wallet = wallet;
 
             byte[] data = request.Serialize();

@@ -16,6 +16,9 @@ public class JavaScriptLibrary : Singleton<JavaScriptLibrary>
     private static extern bool Request_IsAliveWeb3();
 
     [DllImport("__Internal")]
+    private static extern void Request_AccoutClear();
+
+    [DllImport("__Internal")]
     private static extern bool Request_IsExistAccountID();
 
     [DllImport("__Internal")]
@@ -58,10 +61,11 @@ public class JavaScriptLibrary : Singleton<JavaScriptLibrary>
     {
         get
         {
-            if (Application.platform == RuntimePlatform.WindowsEditor)
+            if (Application.platform == RuntimePlatform.WindowsEditor) // for develop
             {
                 // return 0x322Fcc2d398aa9FD3708719a8fE4077cF6C8B5fb // klaytn
-                return "0xdAa9671877150b734998316b145C94aE0579FBeD"; // metamask
+                return "0xdAa9671877150b734998316b145C94aE0579FBeD"; // metamask account 1
+                // return "0x322Fcc2d398aa9FD3708719a8fE4077cF6C8B5fb"; // metamask account 3
             }
 
             else
@@ -71,6 +75,7 @@ public class JavaScriptLibrary : Singleton<JavaScriptLibrary>
 
     // readonly
     private readonly string ReadonlyString_SpaceBar = " ";
+    private readonly string ReadonlyString_PleaseConnectAccount = "메타마스크 지갑의 계정 연동을 해주세요!";
 
     private void Awake()
     {
@@ -81,25 +86,38 @@ public class JavaScriptLibrary : Singleton<JavaScriptLibrary>
 #if UNITY_WEBGL
     public IEnumerator WaitingForAccountWalletLogin()
     {
+        Request_AccoutClear(); // for refresh
+
         if (IsExistAccountID || CurrentAccountID.Length > 0)
             yield break;
 
-        if (Request_IsAliveWeb3())
-        {
-            while (IsExistAccountID == false)
-            {
-                yield return Coop.WaitForSeconds(2);
-                IsExistAccountID = Request_IsExistAccountID();
-            }
-        }
-
-        else
+        if (Request_IsAliveWeb3() == false)
         {
             Request_OnAlert("Web3를 찾지 못했습니다. 메타마스크 확장 프로그램을 설치해주세요.");
             yield break;
         }
 
+        int noticeCount = 0;
+
+        while (IsExistAccountID == false)
+        {
+            IsExistAccountID = Request_IsExistAccountID();
+
+            yield return Coop.WaitForSeconds(2);
+            Debug.Log("계속 기다리는 중...");
+
+            if (noticeCount == 5)
+            {
+                noticeCount = 0;
+                Request_OnAlert(ReadonlyString_PleaseConnectAccount);
+            }
+
+            else
+                ++noticeCount;
+        }
+
         CurrentAccountID = Request_GetAccountID();
+        yield return Coop.WaitForSeconds(1);
 
         if (CurrentAccountID.Length == 0 || CurrentAccountID.Contains(ReadonlyString_SpaceBar)) // error code length 4
         {
@@ -107,8 +125,8 @@ public class JavaScriptLibrary : Singleton<JavaScriptLibrary>
             yield break;
         }
 
-        Screen.fullScreen = false;
-        ActionTrigger.Instance.OnTrigger(ProtocolType.Request_Login);
+        // Screen.fullScreen = false;
+        ActionTrigger.Instance.OnRequestTrigger(ProtocolType.Request_Login_0);
     }
 
     public void OnAlert(string noticeText)

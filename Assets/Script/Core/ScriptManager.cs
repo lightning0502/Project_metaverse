@@ -45,20 +45,20 @@ public class ScriptManager : Singleton<ScriptManager>
         Screen.autorotateToLandscapeRight = true;
 
         // 해상도 설정
-        Screen.SetResolution(1600, 900, true); // 1366, 768 || 1600, 900 || 1024, 576
+        // Screen.SetResolution(1600, 900, true); // 1366, 768 || 1600, 900 || 1024, 576
 
         // 화면 꺼짐 금지
         Screen.sleepTimeout = SleepTimeout.NeverSleep;
 
         // 애니메이션과 코루틴 속도
-        Time.timeScale = 1;
+        Time.timeScale = Application.platform == RuntimePlatform.WindowsEditor ? 3 : 1;
 
         // 디버그 모드 설정
         DebugText.Instance.OnDebugMode = Application.platform != RuntimePlatform.WindowsEditor;
 
         SceneList_ScriptObject = new List<GameObject>();
         int i, count = ParentTransform_Scene.childCount;
-        for (i = 0; i < count; ++i)
+        for (i = 0; i < count; ++i) // 0 is white background image
         {
             SceneList_ScriptObject.Add(ParentTransform_Scene.GetChild(i).gameObject);
             SceneList_ScriptObject[i].SetActive(false);
@@ -76,13 +76,7 @@ public class ScriptManager : Singleton<ScriptManager>
         // network
         WebSocketClient.Instance.Connect();
 
-        OnScene(SceneIndex.Main);
-    }
-
-    public IEnumerator OnScene(SceneIndex sceneName, float delay)
-    {
-        yield return Coop.WaitForSeconds(delay);
-        OnScene(sceneName);
+        SceneChanger.Instance.OnScene(SceneIndex.Main);
     }
 
     public void OnScene(SceneIndex sceneName)
